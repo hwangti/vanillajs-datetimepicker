@@ -13,6 +13,6 @@
     monthsTitle: "Mesi",
     clear: "Cancella",
     weekStart: 1,
-    format: "dd/mm/yyyy"
+    format: "dd/MM/yyyy"
   };
 }());

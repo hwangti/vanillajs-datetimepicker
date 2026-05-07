@@ -13,7 +13,7 @@
     rtl: true,
     monthsTitle: "أشهر",
     clear: "إزالة",
-    format: "yyyy/mm/dd",
+    format: "yyyy/MM/dd",
     weekStart: 0
   };
 }());

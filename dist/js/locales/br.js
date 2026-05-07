@@ -13,6 +13,6 @@
     monthsTitle: "Miz",
     clear: "Dilemel",
     weekStart: 1,
-    format: "dd/mm/yyyy"
+    format: "dd/MM/yyyy"
   };
 }());

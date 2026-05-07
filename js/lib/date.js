@@ -119,8 +119,9 @@ export function startOfYearPeriod(date, years) {
   return Math.floor(year / years) * years;
 }
 
-// Convert date to the first/last date of the month/year of the date
-export function regularizeDate(date, timeSpan, useLastDate) {
+// Convert date to the first/last date of the month/year of the date.
+// keepTime preserves hour/minute/second/ms when true (used by pickTime mode)
+export function regularizeDate(date, timeSpan, useLastDate, keepTime = false) {
   if (timeSpan !== 1 && timeSpan !== 2) {
     return date;
   }
@@ -133,6 +134,9 @@ export function regularizeDate(date, timeSpan, useLastDate) {
     useLastDate
       ? newDate.setFullYear(newDate.getFullYear() + 1, 0, 0)
       : newDate.setMonth(0, 1);
+  }
+  if (keepTime) {
+    return newDate.getTime();
   }
   return newDate.setHours(0, 0, 0, 0);
 }

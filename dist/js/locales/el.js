@@ -11,6 +11,6 @@
     today: "Σήμερα",
     clear: "Καθαρισμός",
     weekStart: 1,
-    format: "d/m/yyyy"
+    format: "d/M/yyyy"
   };
 }());

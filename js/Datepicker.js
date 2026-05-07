@@ -1,5 +1,5 @@
 import {lastItemOf, stringToArray, isInRange} from './lib/utils.js';
-import {today, regularizeDate} from './lib/date.js';
+import {stripTime, today, regularizeDate} from './lib/date.js';
 import {parseDate, formatDate} from './lib/date-format.js';
 import {isActiveElement} from './lib/dom.js';
 import {registerListeners, unregisterListeners} from './lib/event.js';
@@ -41,10 +41,13 @@ function processInputDates(datepicker, inputDates, clear = false) {
     if (date === undefined) {
       return dates;
     }
+    if (!config.pickTime) {
+      date = stripTime(date);
+    }
     // adjust to 1st of the month/Jan 1st of the year
     // or to the last day of the monh/Dec 31st of the year if the datepicker
     // is the range-end picker of a rangepicker
-    date = regularizeDate(date, pickLevel, rangeSideIndex);
+    date = regularizeDate(date, pickLevel, rangeSideIndex, config.pickTime);
     if (
       isInRange(date, config.minDate, config.maxDate)
       && !dates.includes(date)
@@ -513,12 +516,15 @@ export default class Datepicker {
   setFocusedDate(viewDate, resetView = false) {
     const {config, picker, active, rangeSideIndex} = this;
     const pickLevel = config.pickLevel;
-    const newViewDate = parseDate(viewDate, config.format, config.locale);
+    let newViewDate = parseDate(viewDate, config.format, config.locale);
     if (newViewDate === undefined) {
       return;
     }
+    if (!config.pickTime) {
+      newViewDate = stripTime(newViewDate);
+    }
 
-    picker.changeFocus(regularizeDate(newViewDate, pickLevel, rangeSideIndex));
+    picker.changeFocus(regularizeDate(newViewDate, pickLevel, rangeSideIndex, config.pickTime));
     if (active && resetView) {
       picker.changeView(pickLevel);
     }

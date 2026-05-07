@@ -39,6 +39,58 @@
   background-color: hsl(0, 0%, 96%);
 }
 
+.datepicker-time {
+  padding: 4px 8px 2px;
+  font-size: 1rem;
+}
+
+.datepicker-time .datepicker-time-row {
+  display: flex;
+  align-items: center;
+  margin: 2px 0;
+}
+
+.datepicker-time .datepicker-time-row + .datepicker-time-row {
+  margin-top: 4px;
+}
+
+.datepicker-time .datepicker-time-label {
+  flex: 0 0 auto;
+  width: 1.5em;
+  text-align: right;
+  margin-right: 6px;
+  font-size: 0.85em;
+  color: #666;
+}
+
+.datepicker-time input[type=number] {
+  width: 3em;
+  padding: 2px 4px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  font-size: inherit;
+  -moz-appearance: textfield;
+}
+
+.datepicker-time input[type=number]::-webkit-inner-spin-button,
+.datepicker-time input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.datepicker-time input[type=number]:focus {
+  outline: none;
+  border-color: #999;
+}
+
+.datepicker-time input[type=range] {
+  flex: 1 1 auto;
+  min-width: 80px;
+  margin-left: 8px;
+  accent-color: #4a90e2;
+}
+
 .datepicker-title {
   box-shadow: inset 0 -1px 1px rgba(10, 10, 10, 0.1);
   background-color: hsl(0, 0%, 96%);

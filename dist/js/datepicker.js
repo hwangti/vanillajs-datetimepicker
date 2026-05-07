@@ -180,8 +180,9 @@ var Datepicker = (function () {
     return Math.floor(year / years) * years;
   }
 
-  // Convert date to the first/last date of the month/year of the date
-  function regularizeDate(date, timeSpan, useLastDate) {
+  // Convert date to the first/last date of the month/year of the date.
+  // keepTime preserves hour/minute/second/ms when true (used by pickTime mode)
+  function regularizeDate(date, timeSpan, useLastDate, keepTime = false) {
     if (timeSpan !== 1 && timeSpan !== 2) {
       return date;
     }
@@ -195,21 +196,27 @@ var Datepicker = (function () {
         ? newDate.setFullYear(newDate.getFullYear() + 1, 0, 0)
         : newDate.setMonth(0, 1);
     }
+    if (keepTime) {
+      return newDate.getTime();
+    }
     return newDate.setHours(0, 0, 0, 0);
   }
 
   // pattern for format parts
-  const reFormatTokens = /dd?|DD?|mm?|MM?|yy?(?:yy)?/;
+  // order matters: longer tokens (MMMM/MMM/yyyy) must precede shorter ones
+  const reFormatTokens = /MMMM|MMM|MM|M|dd?|DD?|yyyy|yy?|HH?|mm?/;
   // pattern for non date parts
-  const reNonDateParts = /[\s!-/:-@[-`{-~年月日]+/;
+  const reNonDateParts = /[\s!-/:-@[-`{-~年月日時分]+/;
   // cache for persed formats
   let knownFormats = {};
-  // parse funtions for date parts
+  // parse functions for date parts
+  // keys must be iterated in this order so that year is set before month/day,
+  // and date is set before hour/minute (to keep timezone-aware Date stable)
   const parseFns = {
     y(date, year) {
       return new Date(date).setFullYear(parseInt(year, 10));
     },
-    m(date, month, locale) {
+    M(date, month, locale) {
       const newDate = new Date(date);
       let monthIndex = parseInt(month, 10) - 1;
 
@@ -239,6 +246,14 @@ var Datepicker = (function () {
     d(date, day) {
       return new Date(date).setDate(parseInt(day, 10));
     },
+    H(date, hour) {
+      const h = parseInt(hour, 10);
+      return isNaN(h) ? NaN : new Date(date).setHours(h);
+    },
+    m(date, minute) {
+      const mi = parseInt(minute, 10);
+      return isNaN(mi) ? NaN : new Date(date).setMinutes(mi);
+    },
   };
   // format functions for date parts
   const formatFns = {
@@ -254,16 +269,16 @@ var Datepicker = (function () {
     DD(date, locale) {
       return locale.days[date.getDay()];
     },
-    m(date) {
+    M(date) {
       return date.getMonth() + 1;
     },
-    mm(date) {
+    MM(date) {
       return padZero(date.getMonth() + 1, 2);
     },
-    M(date, locale) {
+    MMM(date, locale) {
       return locale.monthsShort[date.getMonth()];
     },
-    MM(date, locale) {
+    MMMM(date, locale) {
       return locale.months[date.getMonth()];
     },
     y(date) {
@@ -274,6 +289,18 @@ var Datepicker = (function () {
     },
     yyyy(date) {
       return padZero(date.getFullYear(), 4);
+    },
+    H(date) {
+      return date.getHours();
+    },
+    HH(date) {
+      return padZero(date.getHours(), 2);
+    },
+    m(date) {
+      return date.getMinutes();
+    },
+    mm(date) {
+      return padZero(date.getMinutes(), 2);
     },
   };
 
@@ -294,7 +321,7 @@ var Datepicker = (function () {
       return knownFormats[format];
     }
 
-    // sprit the format string into parts and seprators
+    // sprit the format string into parts and separators
     const separators = format.split(reFormatTokens);
     const parts = format.match(new RegExp(reFormatTokens, 'g'));
     if (separators.length === 0 || !parts) {
@@ -307,7 +334,7 @@ var Datepicker = (function () {
     // collect parse function keys used in the format
     // iterate over parseFns' keys in order to keep the order of the keys.
     const partParserKeys = Object.keys(parseFns).reduce((keys, key) => {
-      const token = parts.find(part => part[0] !== 'D' && part[0].toLowerCase() === key);
+      const token = parts.find(part => part[0] !== 'D' && part[0] === key);
       if (token) {
         keys.push(key);
       }
@@ -319,21 +346,19 @@ var Datepicker = (function () {
         const dateParts = dateStr.split(reNonDateParts).reduce((dtParts, part, index) => {
           if (part.length > 0 && parts[index]) {
             const token = parts[index][0];
-            if (token === 'M') {
-              dtParts.m = part;
-            } else if (token !== 'D') {
+            if (token !== 'D') {
               dtParts[token] = part;
             }
           }
           return dtParts;
         }, {});
 
-        // iterate over partParserkeys so that the parsing is made in the oder
+        // iterate over partParserkeys so that the parsing is made in the order
         // of year, month and day to prevent the day parser from correcting last
         // day of month wrongly
         return partParserKeys.reduce((origDate, key) => {
           const newDate = parseFns[key](origDate, dateParts[key], locale);
-          // ingnore the part failed to parse
+          // ignore the part failed to parse
           return isNaN(newDate) ? origDate : newDate;
         }, today());
       },
@@ -349,8 +374,8 @@ var Datepicker = (function () {
 
   function parseDate(dateStr, format, locale) {
     if (dateStr instanceof Date || typeof dateStr === 'number') {
-      const date = stripTime(dateStr);
-      return isNaN(date) ? undefined : date;
+      const time = new Date(dateStr).getTime();
+      return isNaN(time) ? undefined : time;
     }
     if (!dateStr) {
       return undefined;
@@ -361,7 +386,7 @@ var Datepicker = (function () {
 
     if (format && format.toValue) {
       const date = format.toValue(dateStr, format, locale);
-      return isNaN(date) ? undefined : stripTime(date);
+      return isNaN(date) ? undefined : Number(date);
     }
 
     return parseFormatString(format).parser(dateStr, locale);
@@ -412,7 +437,7 @@ var Datepicker = (function () {
       return;
     }
     if (el.dataset.styleDisplay) {
-      // restore backed-up dispay property
+      // restore backed-up display property
       el.style.display = el.dataset.styleDisplay;
       delete el.dataset.styleDisplay;
     } else {
@@ -522,7 +547,9 @@ var Datepicker = (function () {
       monthsShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       today: "Today",
       clear: "Clear",
-      titleFormat: "MM y"
+      hour: "Hour",
+      minute: "Minute",
+      titleFormat: "MMMM y"
     }
   };
 
@@ -541,15 +568,17 @@ var Datepicker = (function () {
     defaultViewDate: undefined, // placeholder, defaults to today() by the program
     disableTouchKeyboard: false,
     enableOnReadonly: true,
-    format: 'mm/dd/yyyy',
+    format: 'MM/dd/yyyy',
     language: 'en',
     maxDate: null,
     maxNumberOfDates: 1,
     maxView: 3,
     minDate: null,
+    minuteStep: 1,
     nextArrow: '»',
     orientation: 'auto',
     pickLevel: 0,
+    pickTime: false,
     prevArrow: '«',
     showDaysOfWeek: true,
     showOnClick: true,
@@ -641,7 +670,7 @@ var Datepicker = (function () {
       weekStart,
     } = datepicker.config || {};
 
-    // for backword compatibility
+    // for backward compatibility
     replaceOptions(inOpts, 'calendarWeeks', 'weekNumbers', val => val ? 1 : 0);
     replaceOptions(inOpts, 'clearBtn', 'clearButton');
     replaceOptions(inOpts, 'todayBtn', 'todayButton');
@@ -653,7 +682,7 @@ var Datepicker = (function () {
         if (locales[inOpts.language]) {
           lang = inOpts.language;
         } else {
-          // Check if langauge + region tag can fallback to the one without
+          // Check if language + region tag can fallback to the one without
           // region (e.g. fr-CA → fr)
           lang = inOpts.language.split('-')[0];
           if (!locales[lang]) {
@@ -891,6 +920,17 @@ var Datepicker = (function () {
       };
       delete inOpts.orientation;
     }
+    if ('pickTime' in inOpts) {
+      config.pickTime = !!inOpts.pickTime;
+      delete inOpts.pickTime;
+    }
+    if ('minuteStep' in inOpts) {
+      const step = parseInt(inOpts.minuteStep, 10);
+      if (step >= 1 && step <= 30) {
+        config.minuteStep = step;
+      }
+      delete inOpts.minuteStep;
+    }
     if ('todayButtonMode' in inOpts) {
       switch(inOpts.todayButtonMode) {
         case 0:
@@ -963,6 +1003,18 @@ var Datepicker = (function () {
     </div>
     <div class="datepicker-main"></div>
     <div class="datepicker-footer">
+      <div class="datepicker-time" style="display:none">
+        <div class="datepicker-time-row">
+          <span class="datepicker-time-label datepicker-time-hour-label"></span>
+          <input type="number" class="datepicker-time-hour" min="0" max="23" step="1" tabindex="-1">
+          <input type="range" class="datepicker-time-hour-slider" min="0" max="23" step="1" tabindex="-1">
+        </div>
+        <div class="datepicker-time-row">
+          <span class="datepicker-time-label datepicker-time-minute-label"></span>
+          <input type="number" class="datepicker-time-minute" min="0" max="59" step="1" tabindex="-1">
+          <input type="range" class="datepicker-time-minute-slider" min="0" max="59" step="1" tabindex="-1">
+        </div>
+      </div>
       <div class="datepicker-controls">
         ${getButtons([
           'today-button today-btn',
@@ -1234,12 +1286,17 @@ var Datepicker = (function () {
       this.focused = this.picker.viewDate;
     }
 
-    // Apply update on the selected dates to view's settings
+    // Apply update on the selected dates to view's settings.
+    // Day cells use midnight timestamps; when pickTime is on, selected dates
+    // carry non-zero time, so strip time before comparison to keep highlighting.
     updateSelection() {
-      const {dates, rangepicker} = this.picker.datepicker;
-      this.selected = dates;
+      const {dates, rangepicker, config} = this.picker.datepicker;
+      const norm = config.pickTime
+        ? (d) => new Date(d).setHours(0, 0, 0, 0)
+        : (d) => d;
+      this.selected = config.pickTime ? dates.map(norm) : dates;
       if (rangepicker) {
-        this.range = rangepicker.dates;
+        this.range = config.pickTime ? rangepicker.dates.map(norm) : rangepicker.dates;
       }
     }
 
@@ -1660,6 +1717,17 @@ var Datepicker = (function () {
     goToPrevOrNext(datepicker, 1);
   }
 
+  // Combine a date timestamp (any time portion) with the picker's current time
+  // inputs. Used when pickTime is enabled.
+  function applyPickerTime(datepicker, dateValue) {
+    const {hourInput, minuteInput} = datepicker.picker.controls;
+    const d = new Date(dateValue);
+    const h = parseInt(hourInput.value, 10);
+    const m = parseInt(minuteInput.value, 10);
+    d.setHours(isNaN(h) ? 0 : h, isNaN(m) ? 0 : m, 0, 0);
+    return d.getTime();
+  }
+
   // For the picker's main block to delegete the events from `datepicker-cell`s
   function onClickView(datepicker, ev) {
     const target = findElementInEventPath(ev, '.datepicker-cell');
@@ -1670,7 +1738,10 @@ var Datepicker = (function () {
     const {id, isMinView} = datepicker.picker.currentView;
     const data = target.dataset;
     if (isMinView) {
-      datepicker.setDate(Number(data.date));
+      const dateValue = datepicker.config.pickTime
+        ? applyPickerTime(datepicker, Number(data.date))
+        : Number(data.date);
+      datepicker.setDate(dateValue);
     } else if (id === 1) {
       goToSelectedMonthOrYear(datepicker, Number(data.month));
     } else {
@@ -1679,7 +1750,53 @@ var Datepicker = (function () {
   }
 
   function onMousedownPicker(ev) {
+    // allow focus on time inputs; preventDefault on the rest keeps the input
+    // field from losing focus while interacting with the calendar
+    if (ev.target.closest('.datepicker-time')) {
+      return;
+    }
     ev.preventDefault();
+  }
+
+  // User changed any of: hour input/slider or minute input/slider. Snap minute
+  // to step, keep paired controls in sync, update the selected date, re-render.
+  // Triggered on the 'input' event (every change) so wheel/keystroke edits apply
+  // even when the picker closes before blur fires.
+  function onChangeTime(datepicker, ev) {
+    const {config, dates, picker} = datepicker;
+    const {hourInput, hourSlider, minuteInput, minuteSlider} = picker.controls;
+    const step = config.minuteStep || 1;
+    const target = ev && ev.target;
+    const hourFromSlider = target === hourSlider;
+    const minuteFromSlider = target === minuteSlider;
+
+    let h = parseInt(hourFromSlider ? hourSlider.value : hourInput.value, 10);
+    let m = parseInt(minuteFromSlider ? minuteSlider.value : minuteInput.value, 10);
+    h = isNaN(h) ? 0 : Math.max(0, Math.min(23, h));
+    // sliders always emit stepped values; only snap when value came from the
+    // number input where user can type arbitrary values
+    m = isNaN(m)
+      ? 0
+      : Math.max(0, Math.min(59, minuteFromSlider ? m : Math.round(m / step) * step));
+
+    // sync paired controls; never overwrite the field the user is typing into
+    if (target !== hourInput && document.activeElement !== hourInput) {
+      hourInput.value = String(h).padStart(2, '0');
+    }
+    if (target !== hourSlider) {
+      hourSlider.value = h;
+    }
+    if (target !== minuteInput && document.activeElement !== minuteInput) {
+      minuteInput.value = String(m).padStart(2, '0');
+    }
+    if (target !== minuteSlider) {
+      minuteSlider.value = m;
+    }
+
+    // base date: last selected, else picker's view date
+    const base = new Date(dates.length > 0 ? dates[dates.length - 1] : picker.viewDate);
+    base.setHours(h, m, 0, 0);
+    datepicker.setDate(base.getTime());
   }
 
   const orientClasses = ['left', 'top', 'right', 'bottom'].reduce((obj, key) => {
@@ -1715,6 +1832,8 @@ var Datepicker = (function () {
     if (options.locale) {
       picker.controls.todayButton.textContent = options.locale.today;
       picker.controls.clearButton.textContent = options.locale.clear;
+      picker.controls.hourLabel.textContent = options.locale.hour;
+      picker.controls.minuteLabel.textContent = options.locale.minute;
     }
     if ('todayButton' in options) {
       if (options.todayButton) {
@@ -1734,11 +1853,29 @@ var Datepicker = (function () {
         hideElement(picker.controls.clearButton);
       }
     }
+    if ('pickTime' in options || 'minuteStep' in options) {
+      const {pickTime, minuteStep} = picker.datepicker.config;
+      const {timeContainer, minuteInput, minuteSlider} = picker.controls;
+      if (pickTime) {
+        showElement(timeContainer);
+      } else {
+        hideElement(timeContainer);
+      }
+      const step = minuteStep || 1;
+      if (minuteInput) {
+        minuteInput.step = step;
+      }
+      if (minuteSlider) {
+        minuteSlider.step = step;
+        // last reachable value within 0-59 for the given step (e.g. 45 for step=15)
+        minuteSlider.max = Math.floor(59 / step) * step;
+      }
+    }
   }
 
   // Compute view date to reset, which will be...
   // - the last item of the selected dates or defaultViewDate if no selection
-  // - limitted to minDate or maxDate if it exceeds the range
+  // - limited to minDate or maxDate if it exceeds the range
   function computeResetViewDate(datepicker) {
     const {dates, config, rangeSideIndex} = datepicker;
     const viewDate = dates.length > 0
@@ -1773,7 +1910,7 @@ var Datepicker = (function () {
     return window.getComputedStyle(el).direction;
   }
 
-  // find the closet scrollable ancestor elemnt under the body
+  // find the closet scrollable ancestor element under the body
   function findScrollParents(el) {
     const parent = getParent(el);
     if (parent === document.body || !parent) {
@@ -1800,7 +1937,14 @@ var Datepicker = (function () {
       const [header, main, footer] = element.firstChild.children;
       const title = header.firstElementChild;
       const [prevButton, viewSwitch, nextButton] = header.lastElementChild.children;
-      const [todayButton, clearButton] = footer.firstChild.children;
+      const timeContainer = footer.querySelector('.datepicker-time');
+      const hourInput = timeContainer.querySelector('.datepicker-time-hour');
+      const hourSlider = timeContainer.querySelector('.datepicker-time-hour-slider');
+      const hourLabel = timeContainer.querySelector('.datepicker-time-hour-label');
+      const minuteInput = timeContainer.querySelector('.datepicker-time-minute');
+      const minuteSlider = timeContainer.querySelector('.datepicker-time-minute-slider');
+      const minuteLabel = timeContainer.querySelector('.datepicker-time-minute-label');
+      const [todayButton, clearButton] = footer.querySelector('.datepicker-controls').children;
       const controls = {
         title,
         prevButton,
@@ -1808,6 +1952,13 @@ var Datepicker = (function () {
         nextButton,
         todayButton,
         clearButton,
+        timeContainer,
+        hourInput,
+        hourSlider,
+        hourLabel,
+        minuteInput,
+        minuteSlider,
+        minuteLabel,
       };
       this.main = main;
       this.controls = controls;
@@ -1819,6 +1970,7 @@ var Datepicker = (function () {
       this.viewDate = computeResetViewDate(datepicker);
 
       // set up event listeners
+      const onTimeChange = onChangeTime.bind(null, datepicker);
       registerListeners(datepicker, [
         [element, 'mousedown', onMousedownPicker],
         [main, 'click', onClickView.bind(null, datepicker)],
@@ -1827,6 +1979,12 @@ var Datepicker = (function () {
         [controls.nextButton, 'click', onClickNextButton.bind(null, datepicker)],
         [controls.todayButton, 'click', goToOrSelectToday.bind(null, datepicker)],
         [controls.clearButton, 'click', clearSelection.bind(null, datepicker)],
+        // use 'input' instead of 'change' so wheel/keystroke updates apply
+        // immediately even if the picker closes before blur fires
+        [controls.hourInput, 'input', onTimeChange],
+        [controls.hourSlider, 'input', onTimeChange],
+        [controls.minuteInput, 'input', onTimeChange],
+        [controls.minuteSlider, 'input', onTimeChange],
       ]);
 
       // set up views
@@ -1840,6 +1998,7 @@ var Datepicker = (function () {
 
       this.currentView.render();
       this.main.appendChild(this.currentView.element);
+      this.syncTimeInputs();
       if (config.container) {
         config.container.appendChild(this.element);
       } else {
@@ -2050,7 +2209,25 @@ var Datepicker = (function () {
         view.updateFocus();
         view.updateSelection();
       });
+      this.syncTimeInputs();
       return this;
+    }
+
+    // Reflect the time portion of the latest selected date (or view date if none)
+    // into the hour/minute inputs. No-op when pickTime is disabled.
+    syncTimeInputs() {
+      const {datepicker, controls} = this;
+      if (!datepicker.config.pickTime || !controls.hourInput) {
+        return;
+      }
+      const {dates} = datepicker;
+      const source = new Date(dates.length > 0 ? dates[dates.length - 1] : this.viewDate);
+      const h = source.getHours();
+      const m = source.getMinutes();
+      controls.hourInput.value = String(h).padStart(2, '0');
+      controls.hourSlider.value = h;
+      controls.minuteInput.value = String(m).padStart(2, '0');
+      controls.minuteSlider.value = m;
     }
 
     // Refresh the picker UI
@@ -2323,10 +2500,13 @@ var Datepicker = (function () {
       if (date === undefined) {
         return dates;
       }
+      if (!config.pickTime) {
+        date = stripTime(date);
+      }
       // adjust to 1st of the month/Jan 1st of the year
       // or to the last day of the monh/Dec 31st of the year if the datepicker
       // is the range-end picker of a rangepicker
-      date = regularizeDate(date, pickLevel, rangeSideIndex);
+      date = regularizeDate(date, pickLevel, rangeSideIndex, config.pickTime);
       if (
         isInRange(date, config.minDate, config.maxDate)
         && !dates.includes(date)
@@ -2437,7 +2617,7 @@ var Datepicker = (function () {
         inputField.classList.add('datepicker-input');
         if (options.container) {
           // omit string type check because it doesn't guarantee to avoid errors
-          // (invalid selector string causes abend with sytax error)
+          // (invalid selector string causes abend with syntax error)
           config.container = options.container instanceof HTMLElement
             ? options.container
             : document.querySelector(options.container);
@@ -2454,7 +2634,7 @@ var Datepicker = (function () {
         }
         // attach itaelf to the rangepicker here so that processInputDates() can
         // determine if this is the range-end picker of the rangepicker while
-        // setting inital values when pickLevel > 0
+        // setting initial values when pickLevel > 0
         datepickers[index] = this;
         this.rangepicker = rangepicker;
         this.rangeSideIndex = index;
@@ -2551,7 +2731,7 @@ var Datepicker = (function () {
     }
 
     /**
-     * @type {Boolean} - Whether the picker element is shown. `true` whne shown
+     * @type {Boolean} - Whether the picker element is shown. `true` when shown
      */
     get active() {
       return !!(this.picker && this.picker.active);
@@ -2696,7 +2876,7 @@ var Datepicker = (function () {
      * objects, time values or mix of those for new selection
      * @param {Object} [options] - function options
      * - clear: {boolean} - Whether to clear the existing selection
-     *     defualt: false
+     *     default: false
      * - render: {boolean} - Whether to re-render the picker element
      *     default: true
      * - autohide: {boolean} - Whether to hide the picker element after re-render
@@ -2795,12 +2975,15 @@ var Datepicker = (function () {
     setFocusedDate(viewDate, resetView = false) {
       const {config, picker, active, rangeSideIndex} = this;
       const pickLevel = config.pickLevel;
-      const newViewDate = parseDate(viewDate, config.format, config.locale);
+      let newViewDate = parseDate(viewDate, config.format, config.locale);
       if (newViewDate === undefined) {
         return;
       }
+      if (!config.pickTime) {
+        newViewDate = stripTime(newViewDate);
+      }
 
-      picker.changeFocus(regularizeDate(newViewDate, pickLevel, rangeSideIndex));
+      picker.changeFocus(regularizeDate(newViewDate, pickLevel, rangeSideIndex, config.pickTime));
       if (active && resetView) {
         picker.changeView(pickLevel);
       }

@@ -12,6 +12,6 @@
     today: "Hodiaŭ",
     clear: "Nuligi",
     weekStart: 1,
-    format: "yyyy-mm-dd"
+    format: "yyyy-MM-dd"
   };
 }());

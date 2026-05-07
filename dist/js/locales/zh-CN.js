@@ -12,8 +12,8 @@
     today: "今天",
     monthsTitle: "选择月份",
     clear: "清除",
-    format: "yyyy-mm-dd",
-    titleFormat: "y年mm月",
+    format: "yyyy-MM-dd",
+    titleFormat: "y年MM月",
     weekStart: 1
   };
 }());

@@ -337,6 +337,17 @@ export default function processOptions(options, datepicker) {
     };
     delete inOpts.orientation;
   }
+  if ('pickTime' in inOpts) {
+    config.pickTime = !!inOpts.pickTime;
+    delete inOpts.pickTime;
+  }
+  if ('minuteStep' in inOpts) {
+    const step = parseInt(inOpts.minuteStep, 10);
+    if (step >= 1 && step <= 30) {
+      config.minuteStep = step;
+    }
+    delete inOpts.minuteStep;
+  }
   if ('todayButtonMode' in inOpts) {
     switch(inOpts.todayButtonMode) {
       case 0:

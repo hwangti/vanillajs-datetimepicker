@@ -11,8 +11,10 @@ export default {
     monthsShort: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
     today: "오늘",
     clear: "삭제",
+    hour: "시",
+    minute: "분",
     format: "yyyy-MM-dd",
-    titleFormat: "y년mm월",
+    titleFormat: "y년 MMMM",
     weekStart: 0
   }
 };

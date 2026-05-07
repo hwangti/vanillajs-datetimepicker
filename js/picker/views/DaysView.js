@@ -120,12 +120,17 @@ export default class DaysView extends View {
     this.focused = this.picker.viewDate;
   }
 
-  // Apply update on the selected dates to view's settings
+  // Apply update on the selected dates to view's settings.
+  // Day cells use midnight timestamps; when pickTime is on, selected dates
+  // carry non-zero time, so strip time before comparison to keep highlighting.
   updateSelection() {
-    const {dates, rangepicker} = this.picker.datepicker;
-    this.selected = dates;
+    const {dates, rangepicker, config} = this.picker.datepicker;
+    const norm = config.pickTime
+      ? (d) => new Date(d).setHours(0, 0, 0, 0)
+      : (d) => d;
+    this.selected = config.pickTime ? dates.map(norm) : dates;
     if (rangepicker) {
-      this.range = rangepicker.dates;
+      this.range = config.pickTime ? rangepicker.dates.map(norm) : rangepicker.dates;
     }
   }
 

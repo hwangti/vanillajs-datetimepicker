@@ -23,6 +23,7 @@ import {
   onClickNextButton,
   onClickView,
   onMousedownPicker,
+  onChangeTime,
 } from '../events/pickerListeners.js';
 
 const orientClasses = ['left', 'top', 'right', 'bottom'].reduce((obj, key) => {
@@ -58,6 +59,8 @@ function processPickerOptions(picker, options) {
   if (options.locale) {
     picker.controls.todayButton.textContent = options.locale.today;
     picker.controls.clearButton.textContent = options.locale.clear;
+    picker.controls.hourLabel.textContent = options.locale.hour;
+    picker.controls.minuteLabel.textContent = options.locale.minute;
   }
   if ('todayButton' in options) {
     if (options.todayButton) {
@@ -75,6 +78,24 @@ function processPickerOptions(picker, options) {
       showElement(picker.controls.clearButton);
     } else {
       hideElement(picker.controls.clearButton);
+    }
+  }
+  if ('pickTime' in options || 'minuteStep' in options) {
+    const {pickTime, minuteStep} = picker.datepicker.config;
+    const {timeContainer, minuteInput, minuteSlider} = picker.controls;
+    if (pickTime) {
+      showElement(timeContainer);
+    } else {
+      hideElement(timeContainer);
+    }
+    const step = minuteStep || 1;
+    if (minuteInput) {
+      minuteInput.step = step;
+    }
+    if (minuteSlider) {
+      minuteSlider.step = step;
+      // last reachable value within 0-59 for the given step (e.g. 45 for step=15)
+      minuteSlider.max = Math.floor(59 / step) * step;
     }
   }
 }
@@ -143,7 +164,14 @@ export default class Picker {
     const [header, main, footer] = element.firstChild.children;
     const title = header.firstElementChild;
     const [prevButton, viewSwitch, nextButton] = header.lastElementChild.children;
-    const [todayButton, clearButton] = footer.firstChild.children;
+    const timeContainer = footer.querySelector('.datepicker-time');
+    const hourInput = timeContainer.querySelector('.datepicker-time-hour');
+    const hourSlider = timeContainer.querySelector('.datepicker-time-hour-slider');
+    const hourLabel = timeContainer.querySelector('.datepicker-time-hour-label');
+    const minuteInput = timeContainer.querySelector('.datepicker-time-minute');
+    const minuteSlider = timeContainer.querySelector('.datepicker-time-minute-slider');
+    const minuteLabel = timeContainer.querySelector('.datepicker-time-minute-label');
+    const [todayButton, clearButton] = footer.querySelector('.datepicker-controls').children;
     const controls = {
       title,
       prevButton,
@@ -151,6 +179,13 @@ export default class Picker {
       nextButton,
       todayButton,
       clearButton,
+      timeContainer,
+      hourInput,
+      hourSlider,
+      hourLabel,
+      minuteInput,
+      minuteSlider,
+      minuteLabel,
     };
     this.main = main;
     this.controls = controls;
@@ -162,6 +197,7 @@ export default class Picker {
     this.viewDate = computeResetViewDate(datepicker);
 
     // set up event listeners
+    const onTimeChange = onChangeTime.bind(null, datepicker);
     registerListeners(datepicker, [
       [element, 'mousedown', onMousedownPicker],
       [main, 'click', onClickView.bind(null, datepicker)],
@@ -170,6 +206,12 @@ export default class Picker {
       [controls.nextButton, 'click', onClickNextButton.bind(null, datepicker)],
       [controls.todayButton, 'click', goToOrSelectToday.bind(null, datepicker)],
       [controls.clearButton, 'click', clearSelection.bind(null, datepicker)],
+      // use 'input' instead of 'change' so wheel/keystroke updates apply
+      // immediately even if the picker closes before blur fires
+      [controls.hourInput, 'input', onTimeChange],
+      [controls.hourSlider, 'input', onTimeChange],
+      [controls.minuteInput, 'input', onTimeChange],
+      [controls.minuteSlider, 'input', onTimeChange],
     ]);
 
     // set up views
@@ -183,6 +225,7 @@ export default class Picker {
 
     this.currentView.render();
     this.main.appendChild(this.currentView.element);
+    this.syncTimeInputs();
     if (config.container) {
       config.container.appendChild(this.element);
     } else {
@@ -393,7 +436,25 @@ export default class Picker {
       view.updateFocus();
       view.updateSelection();
     });
+    this.syncTimeInputs();
     return this;
+  }
+
+  // Reflect the time portion of the latest selected date (or view date if none)
+  // into the hour/minute inputs. No-op when pickTime is disabled.
+  syncTimeInputs() {
+    const {datepicker, controls} = this;
+    if (!datepicker.config.pickTime || !controls.hourInput) {
+      return;
+    }
+    const {dates} = datepicker;
+    const source = new Date(dates.length > 0 ? dates[dates.length - 1] : this.viewDate);
+    const h = source.getHours();
+    const m = source.getMinutes();
+    controls.hourInput.value = String(h).padStart(2, '0');
+    controls.hourSlider.value = h;
+    controls.minuteInput.value = String(m).padStart(2, '0');
+    controls.minuteSlider.value = m;
   }
 
   // Refresh the picker UI

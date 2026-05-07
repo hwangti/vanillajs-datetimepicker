@@ -75,7 +75,7 @@ export default class DateRangePicker  {
   constructor(element, options = {}) {
     let inputs = Array.isArray(options.inputs)
       ? options.inputs
-      : Array.from(element.querySelectorAll('input'));
+      : Array.from(element.querySelectorAll('input')).filter(el => !el.closest('.datepicker'));
     if (inputs.length < 2) {
       return;
     }

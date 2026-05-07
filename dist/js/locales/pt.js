@@ -13,6 +13,6 @@
     today: "Hoje",
     monthsTitle: "Meses",
     clear: "Limpar",
-    format: "dd/mm/yyyy"
+    format: "dd/MM/yyyy"
   };
 }());

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Datepicker — Time Picker Demo</title>
+    <link rel="stylesheet" type="text/css" href="../dist/css/datepicker.css">
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+        max-width: 720px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        color: #333;
+      }
+      h1 { font-size: 1.5rem; }
+      .row { margin-bottom: 1.5rem; }
+      label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+      input.dp {
+        width: 220px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.95rem;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+      }
+      .out { font-family: monospace; color: #0a6; font-size: 0.9rem; }
+      pre { background: #f5f5f5; padding: 0.75rem; border-radius: 3px; font-size: 0.85rem; overflow-x: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>Datepicker — 시간 선택(time picker) 데모</h1>
+
+    <div class="row">
+      <label for="dt1">기본 (pickTime: false) — 날짜만</label>
+      <input id="dt1" class="dp" type="text" placeholder="yyyy-MM-dd">
+      <div class="out" id="out1"></div>
+    </div>
+
+    <div class="row">
+      <label for="dt2">pickTime: true, minuteStep: 1 (기본 정밀도)</label>
+      <input id="dt2" class="dp" type="text" placeholder="yyyy-MM-dd HH:mm">
+      <div class="out" id="out2"></div>
+    </div>
+
+    <div class="row">
+      <label for="dt3">pickTime: true, minuteStep: 15 (15분 단위)</label>
+      <input id="dt3" class="dp" type="text" placeholder="yyyy-MM-dd HH:mm">
+      <div class="out" id="out3"></div>
+    </div>
+
+    <h2>설정 코드</h2>
+    <pre><code>new Datepicker(input, {
+  format: 'yyyy-MM-dd HH:mm',
+  pickTime: true,
+  minuteStep: 15,         // 1, 5, 10, 15, 30 등
+  todayButton: true,
+  todayButtonMode: 1,     // 0=focus만, 1=오늘 날짜를 바로 선택
+  clearButton: true,
+});</code></pre>
+
+    <script src="../dist/js/datepicker-full.js"></script>
+    <script src="../dist/js/locales/ko.js"></script>
+    <script>
+      /* global Datepicker */
+      function bind(id, opts, outId) {
+        const el = document.getElementById(id);
+        const dp = new Datepicker(el, opts);
+        const out = document.getElementById(outId);
+        const update = () => {
+          const d = dp.getDate();
+          out.textContent = d ? `getDate() → ${d.toISOString()}` : '';
+        };
+        el.addEventListener('changeDate', update);
+        update();
+        return dp;
+      }
+
+      const common = {
+        language: 'ko',
+        todayButton: true,
+        todayButtonMode: 1,
+        clearButton: true,
+      };
+
+      bind('dt1', Object.assign({format: 'yyyy-MM-dd'}, common), 'out1');
+      bind('dt2', Object.assign({
+        format: 'yyyy-MM-dd HH:mm',
+        pickTime: true,
+      }, common), 'out2');
+      bind('dt3', Object.assign({
+        format: 'yyyy-MM-dd HH:mm',
+        pickTime: true,
+        minuteStep: 15,
+      }, common), 'out3');
+    </script>
+  </body>
+</html>

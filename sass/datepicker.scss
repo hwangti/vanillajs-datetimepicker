@@ -118,6 +118,58 @@ $dp-one-seventh: math.percentage(math.div(1, 7));
   background-color: $dp-footer-background-color;
 }
 
+.datepicker-time {
+  padding: 4px 8px 2px;
+  font-size: 1rem;
+
+  .datepicker-time-row {
+    display: flex;
+    align-items: center;
+    margin: 2px 0;
+
+    & + .datepicker-time-row {
+      margin-top: 4px;
+    }
+  }
+
+  .datepicker-time-label {
+    flex: 0 0 auto;
+    width: 1.5em;
+    text-align: right;
+    margin-right: 6px;
+    font-size: 0.85em;
+    color: #666;
+  }
+
+  input[type="number"] {
+    width: 3em;
+    padding: 2px 4px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    font-size: inherit;
+    -moz-appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #999;
+    }
+  }
+
+  input[type="range"] {
+    flex: 1 1 auto;
+    min-width: 80px;
+    margin-left: 8px;
+    accent-color: #4a90e2;
+  }
+}
+
 .datepicker-title {
   box-shadow: $dp-title-box-shadow;
   background-color: $dp-title-background-color;
