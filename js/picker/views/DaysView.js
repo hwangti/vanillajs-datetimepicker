@@ -125,11 +125,9 @@ export default class DaysView extends View {
   // carry non-zero time, so strip time before comparison to keep highlighting.
   updateSelection() {
     const {dates, rangepicker, config} = this.picker.datepicker;
-    const norm = config.pickTime
-      ? (d) => new Date(d).setHours(0, 0, 0, 0)
-      : (d) => d;
+    const norm = (d) => d === undefined ? d : new Date(d).setHours(0, 0, 0, 0);
     this.selected = config.pickTime ? dates.map(norm) : dates;
-    if (rangepicker) {
+    if (rangepicker && rangepicker.dates) {
       this.range = config.pickTime ? rangepicker.dates.map(norm) : rangepicker.dates;
     }
   }

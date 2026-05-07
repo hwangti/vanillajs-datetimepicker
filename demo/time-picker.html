@@ -48,6 +48,16 @@
       <div class="out" id="out3"></div>
     </div>
 
+    <div class="row">
+      <label>DateRangePicker + pickTime (시작 ~ 끝)</label>
+      <div id="rangeWrap" style="display:flex; gap:0.5rem; align-items:center;">
+        <input id="rangeStart" class="dp" type="text" placeholder="시작">
+        <span>~</span>
+        <input id="rangeEnd" class="dp" type="text" placeholder="끝">
+      </div>
+      <div class="out" id="outRange"></div>
+    </div>
+
     <h2>설정 코드</h2>
     <pre><code>new Datepicker(input, {
   format: 'yyyy-MM-dd HH:mm',
@@ -92,6 +102,23 @@
         pickTime: true,
         minuteStep: 15,
       }, common), 'out3');
+
+      const rangeWrap = document.getElementById('rangeWrap');
+      const drp = new DateRangePicker(rangeWrap, Object.assign({
+        format: 'yyyy-MM-dd HH:mm',
+        pickTime: true,
+        minuteStep: 5,
+        allowOneSidedRange: true
+      }, common));
+      const outRange = document.getElementById('outRange');
+      const updateRange = () => {
+        const [s, e] = drp.dates;
+        outRange.textContent = (s || e)
+          ? `[${s ? new Date(s).toISOString() : '∅'}] ~ [${e ? new Date(e).toISOString() : '∅'}]`
+          : '';
+      };
+      rangeWrap.addEventListener('changeDate', updateRange);
+      updateRange();
     </script>
   </body>
 </html>
