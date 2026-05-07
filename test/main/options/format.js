@@ -18,7 +18,7 @@ describe('options - format & language', function () {
 
   describe('format', function () {
     it('specifies the date format used to parse/format the date string in input', function () {
-      const dp = new Datepicker(input, {format: 'yyyy-mm-dd'});
+      const dp = new Datepicker(input, {format: 'yyyy-MM-dd'});
 
       dp.setDate(new Date(2020, 1, 14));
       expect(dp.dates, 'to equal', [dateValue(2020, 1, 14)]);
@@ -83,7 +83,7 @@ describe('options - format & language', function () {
       expect(dp.dates, 'to equal', [dateValue(2020, 1, 14)]);
       expect(input.value, 'to be', '14 Feb, \'20');
 
-      dp.setOptions({format: 'mm/dd/yyyy'});
+      dp.setOptions({format: 'MM/dd/yyyy'});
       expect(input.value, 'to be', '02/14/2020');
       input.value = '4/22/2020';
       dp.update();
@@ -147,7 +147,7 @@ describe('options - format & language', function () {
 
     it('default format/weekStart in the locale are overridden by user-specified ones', function () {
       const locale = Datepicker.locales['zh-CN'];
-      const {dp, picker} = createDP(input, {language: 'zh-CN', format: 'yyyy年mm月dd日', weekStart: 0});
+      const {dp, picker} = createDP(input, {language: 'zh-CN', format: 'yyyy年MM月dd日', weekStart: 0});
       const viewSwitch = getViewSwitch(picker);
       dp.setDate(new Date(2020, 1, 14));
       dp.show();
@@ -276,7 +276,7 @@ describe('options - format & language', function () {
     });
 
     it('user-specified format/weekStart other than old language\'s default are kept on being updated dynamically', function () {
-      const {dp, picker} = createDP(input, {language: 'zh-CN', format: 'yyyy/mm/dd', weekStart: 0});
+      const {dp, picker} = createDP(input, {language: 'zh-CN', format: 'yyyy/MM/dd', weekStart: 0});
       dp.setDate(new Date(2020, 1, 14));
       dp.show();
 

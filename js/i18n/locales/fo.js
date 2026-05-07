@@ -4,7 +4,7 @@
  */
 export default {
   fo: {
-    days: ["Sunnudagur", "Mánadagur", "Týsdagur", "Mikudagur", "Hósdagur", "Fríggjadagur", "Leygardagur"],
+    days: ["Sunnudagur", "Mánadagur", "Týsdagur", "MMMikudagur", "Hósdagur", "Fríggjadagur", "Leygardagur"],
     daysShort: ["Sun", "Mán", "Týs", "Mik", "Hós", "Frí", "Ley"],
     daysMin: ["Su", "Má", "Tý", "Mi", "Hó", "Fr", "Le"],
     months: ["Januar", "Februar", "Marts", "Apríl", "Mei", "Juni", "Juli", "August", "Septembur", "Oktobur", "Novembur", "Desembur"],

@@ -158,7 +158,7 @@ describe('keyboard operation - arrow-right', function () {
       input.focus();
 
       simulant.fire(input, 'keydown', {key: 'ArrowRight', ctrlKey: true});
-      expect(viewSwitch.textContent, 'to be', 'May 2020');
+      expect(viewSwitch.textContent, 'to be', 'MMMay 2020');
 
       // view date is changed to the same day of the next month
       let cells = getCells(picker);
@@ -227,7 +227,7 @@ describe('keyboard operation - arrow-right', function () {
       input.focus();
 
       simulant.fire(input, 'keydown', {key: 'ArrowRight', metaKey: true});
-      expect(viewSwitch.textContent, 'to be', 'May 2020');
+      expect(viewSwitch.textContent, 'to be', 'MMMay 2020');
 
       // view date is changed to the same day of the next month
       let cells = getCells(picker);

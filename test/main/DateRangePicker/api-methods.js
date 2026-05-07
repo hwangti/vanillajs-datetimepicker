@@ -46,8 +46,8 @@ describe('DateRangePicker - API methods', function () {
       input1.value = '04/22/2020';
 
       const drp = new DateRangePicker(elem);
-      expect(drp.getDates('yyyy-mm-dd'), 'to equal', ['2020-04-20', '2020-04-22']);
-      expect(drp.getDates('d M, yy'), 'to equal', ['20 Apr, 20', '22 Apr, 20']);
+      expect(drp.getDates('yyyy-MM-dd'), 'to equal', ['2020-04-20', '2020-04-22']);
+      expect(drp.getDates('d MMM, yy'), 'to equal', ['20 Apr, 20', '22 Apr, 20']);
 
       drp.destroy();
       input0.value = '';
@@ -57,7 +57,7 @@ describe('DateRangePicker - API methods', function () {
     it('uses undefined instead of Date object if date is not selected', function () {
       const drp = new DateRangePicker(elem);
       expect(drp.getDates(), 'to equal', [undefined, undefined]);
-      expect(drp.getDates('yyyy-mm-dd'), 'to equal', [undefined, undefined]);
+      expect(drp.getDates('yyyy-MM-dd'), 'to equal', [undefined, undefined]);
 
       drp.destroy();
     });
@@ -103,7 +103,7 @@ describe('DateRangePicker - API methods', function () {
 
       expect(drp.datepickers[0].dates, 'to equal', [dateValue(2020, 4, 31)]);
       expect(input0.value, 'to be', '05/31/2020');
-      expect(viewSwitch0.textContent, 'to be', 'May 2020');
+      expect(viewSwitch0.textContent, 'to be', 'MMMay 2020');
       expect(getCellIndices(cells0, '.selected'), 'to equal', [35]);
       expect(getCellIndices(cells0, '.range-start'), 'to equal', [35]);
       expect(getCellIndices(cells0, '.range-end'), 'to equal', []);
@@ -135,7 +135,7 @@ describe('DateRangePicker - API methods', function () {
 
       expect(drp.datepickers[0].dates, 'to equal', [dateValue(2020, 4, 31)]);
       expect(input0.value, 'to be', '05/31/2020');
-      expect(viewSwitch0.textContent, 'to be', 'May 2020');
+      expect(viewSwitch0.textContent, 'to be', 'MMMay 2020');
       expect(getCellIndices(cells0, '.selected'), 'to equal', [35]);
 
       expect(drp.datepickers[1].dates, 'to equal', [dateValue(2020, 6, 5)]);

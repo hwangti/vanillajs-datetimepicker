@@ -634,10 +634,10 @@ describe('options', function () {
     it('can be updated with setOptions()', function () {
       const {dp, picker} = createDP(input);
       const title = picker.querySelector('.datepicker-title');
-      dp.setOptions({title: 'My Datepicker'});
+      dp.setOptions({title: 'MMMy Datepicker'});
       dp.show();
 
-      expect(title.textContent, 'to be', 'My Datepicker');
+      expect(title.textContent, 'to be', 'MMMy Datepicker');
       expect(isVisible(title), 'to be true');
 
       dp.setOptions({title: ''});

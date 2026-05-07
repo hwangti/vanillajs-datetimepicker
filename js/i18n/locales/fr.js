@@ -17,6 +17,6 @@ export default {
     monthsTitle: "Mois",
     clear: "Effacer",
     weekStart: 1,
-    format: "dd/mm/yyyy"
+    format: "dd/MM/yyyy"
   }
 };

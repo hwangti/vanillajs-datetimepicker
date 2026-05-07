@@ -13,6 +13,6 @@ export default {
     monthsTitle: "महीने",
     clear: "हटवा",
     weekStart: 1,
-    format: "dd / mm / yyyy"
+    format: "dd / MM / yyyy"
   }
 };

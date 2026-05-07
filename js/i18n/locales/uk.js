@@ -11,7 +11,7 @@ export default {
     monthsShort: ["Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру"],
     today: "Сьогодні",
     clear: "Очистити",
-    format: "dd.mm.yyyy",
+    format: "dd.MM.yyyy",
     weekStart: 1
   }
 };

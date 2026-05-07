@@ -14,6 +14,6 @@ export default {
     monthsTitle: "Моҳҳо",
     clear: "Тоза намудан",
     weekStart: 1,
-    format: "dd.mm.yyyy"
+    format: "dd.MM.yyyy"
   }
 };

@@ -13,6 +13,6 @@ export default {
     today: "Dnes",
     clear: "Vymazať",
     weekStart: 1,
-    format: "d.m.yyyy"
+    format: "d.M.yyyy"
   }
 };

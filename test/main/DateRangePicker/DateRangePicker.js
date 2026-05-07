@@ -171,7 +171,7 @@ describe('DateRangePicker', function () {
     nextButton1.click();
     cells = getCells(picker1);
 
-    expect(viewSwitch1.textContent, 'to be', 'May 2020');
+    expect(viewSwitch1.textContent, 'to be', 'MMMay 2020');
     expect(getCellIndices(cells, '.selected'), 'to equal', []);
     expect(getCellIndices(cells, '.range-start'), 'to equal', []);
     expect(getCellIndices(cells, '.range-end'), 'to equal', []);

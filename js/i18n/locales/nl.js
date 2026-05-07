@@ -10,9 +10,9 @@ export default {
     months: ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"],
     monthsShort: ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"],
     today: "Vandaag",
-    monthsTitle: "Maanden",
+    monthsTitle: "MMMaanden",
     clear: "Wissen",
     weekStart: 1,
-    format: "dd-mm-yyyy"
+    format: "dd-MM-yyyy"
   }
 };

@@ -461,7 +461,7 @@ describe('mouse operation', function () {
       dp.show();
 
       nextButton.click();
-      expect(viewSwitch.textContent, 'to be', 'May 2020');
+      expect(viewSwitch.textContent, 'to be', 'MMMay 2020');
       expect(input.value, 'to be', '04/22/2020');
 
       // view date is changed to the same day of the next month

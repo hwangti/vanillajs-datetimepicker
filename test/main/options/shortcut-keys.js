@@ -2182,7 +2182,7 @@ describe('options - shortcutKeys', function () {
     });
   });
 
-  describe('exitEditMode option', function () {
+  describe('exitEditMMMode option', function () {
     it('changes shortcut key to exit edit mode', function () {
       const {dp, picker} = createDP(input, {
         shortcutKeys: {exitEditMode: {key: 'F2'}}

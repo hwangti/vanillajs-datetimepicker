@@ -42,7 +42,7 @@ describe('Datepicker - API methods', function () {
     });
 
     it('returns a formatted date string of selected date if the format is specified', function () {
-      expect(dp.getDate('yyyy-mm-dd'), 'to be', '2020-04-22');
+      expect(dp.getDate('yyyy-MM-dd'), 'to be', '2020-04-22');
     });
 
     it('returns undefined if no date is selected', function () {
@@ -51,7 +51,7 @@ describe('Datepicker - API methods', function () {
       dp = new Datepicker(input);
 
       expect(dp.getDate(), 'to be undefined');
-      expect(dp.getDate('yyyy-mm-dd'), 'to be undefined');
+      expect(dp.getDate('yyyy-MM-dd'), 'to be undefined');
     });
   });
 
@@ -133,7 +133,7 @@ describe('Datepicker - API methods', function () {
       dp.setDate({clear: true});
       expect(dp.dates, 'to equal', []);
       expect(input.value, 'to be', '');
-      expect(viewSwitch.textContent, 'to be', Datepicker.formatDate(today, 'MM yyyy'));
+      expect(viewSwitch.textContent, 'to be', Datepicker.formatDate(today, 'MMMM yyyy'));
 
       // view date is changed to the default view date (current date)
       const cells = getCells(picker);
@@ -420,10 +420,10 @@ describe('Datepicker - API methods', function () {
     });
 
     it('returns date string of the focused date if a format string is passed', function () {
-      expect(dp.getFocusedDate('m/d/yy'), 'to be', '4/22/20');
+      expect(dp.getFocusedDate('M/d/yy'), 'to be', '4/22/20');
 
       dp.setDate('6/4/2021');
-      expect(dp.getFocusedDate('yyyy-mm-dd'), 'to be', '2021-06-04');
+      expect(dp.getFocusedDate('yyyy-MM-dd'), 'to be', '2021-06-04');
     });
   });
 

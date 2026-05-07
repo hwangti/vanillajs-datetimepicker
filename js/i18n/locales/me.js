@@ -12,6 +12,6 @@ export default {
     today: "Danas",
     weekStart: 1,
     clear: "Izbriši",
-    format: "dd.mm.yyyy"
+    format: "dd.MM.yyyy"
   }
 };

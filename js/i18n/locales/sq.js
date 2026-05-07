@@ -12,7 +12,7 @@ export default {
     monthsTitle: "Muaj",
     today: "Sot",
     weekStart: 1,
-    format: "dd/mm/yyyy",
+    format: "dd/MM/yyyy",
     clear: "Pastro"
   }
 };

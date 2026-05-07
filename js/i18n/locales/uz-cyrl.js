@@ -11,7 +11,7 @@ export default {
     monthsShort: ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"],
     today: "Бугун",
     clear: "Ўчириш",
-    format: "dd.mm.yyyy",
+    format: "dd.MM.yyyy",
     weekStart: 1,
     monthsTitle: 'Ойлар'
   }

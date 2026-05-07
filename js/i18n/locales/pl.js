@@ -12,6 +12,6 @@ export default {
     today: "Dzisiaj",
     weekStart: 1,
     clear: "Wyczyść",
-    format: "dd.mm.yyyy"
+    format: "dd.MM.yyyy"
   }
 };

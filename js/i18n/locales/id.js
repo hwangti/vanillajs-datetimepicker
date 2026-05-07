@@ -14,6 +14,6 @@ export default {
     monthsTitle: "Bulan",
     clear: "Kosongkan",
     weekStart: 0,
-    format: "dd-mm-yyyy"
+    format: "dd-MM-yyyy"
   }
 };

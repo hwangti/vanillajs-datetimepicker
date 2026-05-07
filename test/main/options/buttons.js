@@ -337,7 +337,7 @@ describe('options - buttons', function () {
     });
   });
 
-  describe('todayButtonMode', function () {
+  describe('todayButtonMMMode', function () {
     let dp;
     let picker;
     let viewSwitch;
@@ -901,7 +901,7 @@ describe('options - buttons', function () {
     });
   });
 
-  describe('todayBtnMode', function () {
+  describe('todayBtnMMMode', function () {
     let dp;
     let picker;
     let todayButton;

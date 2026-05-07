@@ -11,7 +11,7 @@ export default {
     monthsShort: ["Հնվ", "Փետ", "Մար", "Ապր", "Մայ", "Հուն", "Հուլ", "Օգս", "Սեպ", "Հոկ", "Նոյ", "Դեկ"],
     today: "Այսօր",
     clear: "Ջնջել",
-    format: "dd.mm.yyyy",
+    format: "dd.MM.yyyy",
     weekStart: 1,
     monthsTitle: 'Ամիսնէր'
   }

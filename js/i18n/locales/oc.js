@@ -12,6 +12,6 @@ export default {
     monthsTitle: "Meses",
     clear: "Escafar",
     weekStart: 1,
-    format: "dd/mm/yyyy"
+    format: "dd/MM/yyyy"
   }
 };

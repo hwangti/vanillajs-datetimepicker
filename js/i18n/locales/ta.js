@@ -13,6 +13,6 @@ export default {
     monthsTitle: "மாதங்கள்",
     clear: "நீக்கு",
     weekStart: 1,
-    format: "dd/mm/yyyy"
+    format: "dd/MM/yyyy"
   }
 };

@@ -948,7 +948,7 @@ describe('options - date restrictions', function () {
       expect(getDisabled(cells), 'to equal', [
         [2, 'Mar'],
         [3, 'Apr'],
-        [4, 'May'],
+        [4, 'MMMay'],
         [5, 'Jun'],
         [6, 'Jul'],
         [7, 'Aug'],
@@ -1237,7 +1237,7 @@ describe('options - date restrictions', function () {
         [1, 'Feb'],
         [2, 'Mar'],
         [3, 'Apr'],
-        [4, 'May'],
+        [4, 'MMMay'],
         [5, 'Jun'],
       ]);
 

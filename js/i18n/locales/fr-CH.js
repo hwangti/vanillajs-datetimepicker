@@ -7,7 +7,7 @@
  */
 export default {
   'fr-CH': {
-    days: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+    days: ["Dimanche", "Lundi", "MMMardi", "MMMercredi", "Jeudi", "Vendredi", "Samedi"],
     daysShort: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
     daysMin: ["D", "L", "Ma", "Me", "J", "V", "S"],
     months: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
@@ -16,6 +16,6 @@ export default {
     monthsTitle: "Mois",
     clear: "Effacer",
     weekStart: 1,
-    format: "dd.mm.yyyy"
+    format: "dd.MM.yyyy"
   }
 };

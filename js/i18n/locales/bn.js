@@ -14,6 +14,6 @@ export default {
     monthsTitle: "মাস",
     clear: "পরিষ্কার",
     weekStart: 0,
-    format: "mm/dd/yyyy"
+    format: "MM/dd/yyyy"
   }
 };

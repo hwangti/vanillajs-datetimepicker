@@ -12,6 +12,6 @@ export default {
     today: "tänään",
     clear: "Tyhjennä",
     weekStart: 1,
-    format: "d.m.yyyy"
+    format: "d.M.yyyy"
   }
 };

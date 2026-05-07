@@ -1,18 +1,21 @@
-import {stripTime, today} from './date.js';
+import {today} from './date.js';
 import {lastItemOf} from './utils.js';
 
 // pattern for format parts
-export const reFormatTokens = /dd?|DD?|mm?|MM?|yy?(?:yy)?/;
+// order matters: longer tokens (MMMM/MMM/yyyy) must precede shorter ones
+export const reFormatTokens = /MMMM|MMM|MM|M|dd?|DD?|yyyy|yy?|HH?|mm?/;
 // pattern for non date parts
-export const reNonDateParts = /[\s!-/:-@[-`{-~年月日]+/;
+export const reNonDateParts = /[\s!-/:-@[-`{-~年月日時分]+/;
 // cache for persed formats
 let knownFormats = {};
 // parse functions for date parts
+// keys must be iterated in this order so that year is set before month/day,
+// and date is set before hour/minute (to keep timezone-aware Date stable)
 const parseFns = {
   y(date, year) {
     return new Date(date).setFullYear(parseInt(year, 10));
   },
-  m(date, month, locale) {
+  M(date, month, locale) {
     const newDate = new Date(date);
     let monthIndex = parseInt(month, 10) - 1;
 
@@ -42,6 +45,14 @@ const parseFns = {
   d(date, day) {
     return new Date(date).setDate(parseInt(day, 10));
   },
+  H(date, hour) {
+    const h = parseInt(hour, 10);
+    return isNaN(h) ? NaN : new Date(date).setHours(h);
+  },
+  m(date, minute) {
+    const mi = parseInt(minute, 10);
+    return isNaN(mi) ? NaN : new Date(date).setMinutes(mi);
+  },
 };
 // format functions for date parts
 const formatFns = {
@@ -57,16 +68,16 @@ const formatFns = {
   DD(date, locale) {
     return locale.days[date.getDay()];
   },
-  m(date) {
+  M(date) {
     return date.getMonth() + 1;
   },
-  mm(date) {
+  MM(date) {
     return padZero(date.getMonth() + 1, 2);
   },
-  M(date, locale) {
+  MMM(date, locale) {
     return locale.monthsShort[date.getMonth()];
   },
-  MM(date, locale) {
+  MMMM(date, locale) {
     return locale.months[date.getMonth()];
   },
   y(date) {
@@ -77,6 +88,18 @@ const formatFns = {
   },
   yyyy(date) {
     return padZero(date.getFullYear(), 4);
+  },
+  H(date) {
+    return date.getHours();
+  },
+  HH(date) {
+    return padZero(date.getHours(), 2);
+  },
+  m(date) {
+    return date.getMinutes();
+  },
+  mm(date) {
+    return padZero(date.getMinutes(), 2);
   },
 };
 
@@ -110,7 +133,7 @@ function parseFormatString(format) {
   // collect parse function keys used in the format
   // iterate over parseFns' keys in order to keep the order of the keys.
   const partParserKeys = Object.keys(parseFns).reduce((keys, key) => {
-    const token = parts.find(part => part[0] !== 'D' && part[0].toLowerCase() === key);
+    const token = parts.find(part => part[0] !== 'D' && part[0] === key);
     if (token) {
       keys.push(key);
     }
@@ -122,9 +145,7 @@ function parseFormatString(format) {
       const dateParts = dateStr.split(reNonDateParts).reduce((dtParts, part, index) => {
         if (part.length > 0 && parts[index]) {
           const token = parts[index][0];
-          if (token === 'M') {
-            dtParts.m = part;
-          } else if (token !== 'D') {
+          if (token !== 'D') {
             dtParts[token] = part;
           }
         }
@@ -152,8 +173,8 @@ function parseFormatString(format) {
 
 export function parseDate(dateStr, format, locale) {
   if (dateStr instanceof Date || typeof dateStr === 'number') {
-    const date = stripTime(dateStr);
-    return isNaN(date) ? undefined : date;
+    const time = new Date(dateStr).getTime();
+    return isNaN(time) ? undefined : time;
   }
   if (!dateStr) {
     return undefined;
@@ -164,7 +185,7 @@ export function parseDate(dateStr, format, locale) {
 
   if (format && format.toValue) {
     const date = format.toValue(dateStr, format, locale);
-    return isNaN(date) ? undefined : stripTime(date);
+    return isNaN(date) ? undefined : Number(date);
   }
 
   return parseFormatString(format).parser(dateStr, locale);

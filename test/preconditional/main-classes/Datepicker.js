@@ -11,8 +11,8 @@ import {dateValue, today, startOfYearPeriod} from '../../../js/lib/date.js';
 import expect from 'unexpected';
 
 const esLocale = {
-  months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
-  monthsShort: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+  months: ["Enero", "Febrero", "Marzo", "Abril", "MMMayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+  monthsShort: ["Ene", "Feb", "Mar", "Abr", "MMMay", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
 };
 
 describe('Datepicker', function () {
@@ -70,7 +70,7 @@ describe('Datepicker', function () {
       expect(dp.config.defaultViewDate, 'to be', today());
       expect(dp.config.disableTouchKeyboard, 'to be false');
       expect(dp.config.enableOnReadonly, 'to be true');
-      expect(dp.config.format, 'to be', 'mm/dd/yyyy');
+      expect(dp.config.format, 'to be', 'MM/dd/yyyy');
       expect(dp.config.getWeekNumber, 'to be null');
       expect(dp.config.language, 'to be', 'en');
       expect(dp.config.locale, 'to equal', Object.assign({
@@ -584,16 +584,16 @@ describe('Datepicker', function () {
       Datepicker.locales.es = esLocale;
 
       let date = new Date(2020, 0, 4);
-      expect(Datepicker.formatDate(date, 'y-m-d'), 'to be', '2020-1-4');
-      expect(Datepicker.formatDate(date.getTime(), 'dd M yy'), 'to be', '04 Jan 20');
-      expect(Datepicker.formatDate(date, 'dd M yy', 'es'), 'to be', '04 Ene 20');
-      expect(Datepicker.formatDate(date.getTime(), 'MM d, y', 'es'), 'to be', 'Enero 4, 2020');
+      expect(Datepicker.formatDate(date, 'y-M-d'), 'to be', '2020-1-4');
+      expect(Datepicker.formatDate(date.getTime(), 'dd MMM yy'), 'to be', '04 Jan 20');
+      expect(Datepicker.formatDate(date, 'dd MMM yy', 'es'), 'to be', '04 Ene 20');
+      expect(Datepicker.formatDate(date.getTime(), 'MMMM d, y', 'es'), 'to be', 'Enero 4, 2020');
 
       delete Datepicker.locales.es;
 
       // fallback to en
-      expect(Datepicker.formatDate(date, 'dd M yy', 'es'), 'to be', '04 Jan 20');
-      expect(Datepicker.formatDate(date.getTime(), 'MM d, y', 'es'), 'to be', 'January 4, 2020');
+      expect(Datepicker.formatDate(date, 'dd MMM yy', 'es'), 'to be', '04 Jan 20');
+      expect(Datepicker.formatDate(date.getTime(), 'MMMM d, y', 'es'), 'to be', 'January 4, 2020');
     });
   });
 
@@ -602,22 +602,22 @@ describe('Datepicker', function () {
       Datepicker.locales.es = esLocale;
 
       let timeValue = new Date(2020, 0, 4).getTime();
-      expect(Datepicker.parseDate('2020-1-4', 'y-m-d'), 'to be', timeValue);
-      expect(Datepicker.parseDate('04 Jan 2020', 'dd M yy'), 'to be', timeValue);
-      expect(Datepicker.parseDate('04 Ene 2020', 'dd M yy', 'es'), 'to be', timeValue);
-      expect(Datepicker.parseDate('Enero 4, 2020', 'MM d, y', 'es'), 'to be', timeValue);
+      expect(Datepicker.parseDate('2020-1-4', 'y-M-d'), 'to be', timeValue);
+      expect(Datepicker.parseDate('04 Jan 2020', 'dd MMM yy'), 'to be', timeValue);
+      expect(Datepicker.parseDate('04 Ene 2020', 'dd MMM yy', 'es'), 'to be', timeValue);
+      expect(Datepicker.parseDate('Enero 4, 2020', 'MMMM d, y', 'es'), 'to be', timeValue);
 
-      expect(Datepicker.parseDate('04/20/2022', 'mm/dd/yyyy'), 'to equal', new Date(2022, 3, 20).getTime());
-      expect(Datepicker.parseDate('5/3/1994', 'd/m/y'), 'to equal', new Date(1994, 2, 5).getTime());
+      expect(Datepicker.parseDate('04/20/2022', 'MM/dd/yyyy'), 'to equal', new Date(2022, 3, 20).getTime());
+      expect(Datepicker.parseDate('5/3/1994', 'd/M/y'), 'to equal', new Date(1994, 2, 5).getTime());
 
       delete Datepicker.locales.es;
 
       // fallback to en
       const fallbackDate = new Date(timeValue).setMonth(new Date().getMonth());
-      expect(Datepicker.parseDate('04 Ene 2020', 'dd M yy', 'es'), 'to be', fallbackDate);
-      expect(Datepicker.parseDate('Enero 4, 2020', 'MM d, y', 'es'), 'to be', fallbackDate);
-      expect(Datepicker.parseDate('04 Jan 2020', 'dd M yy', 'es'), 'to be', timeValue);
-      expect(Datepicker.parseDate('2020-1-4', 'y-m-d', 'es'), 'to be', timeValue);
+      expect(Datepicker.parseDate('04 Ene 2020', 'dd MMM yy', 'es'), 'to be', fallbackDate);
+      expect(Datepicker.parseDate('Enero 4, 2020', 'MMMM d, y', 'es'), 'to be', fallbackDate);
+      expect(Datepicker.parseDate('04 Jan 2020', 'dd MMM yy', 'es'), 'to be', timeValue);
+      expect(Datepicker.parseDate('2020-1-4', 'y-M-d', 'es'), 'to be', timeValue);
     });
   });
 

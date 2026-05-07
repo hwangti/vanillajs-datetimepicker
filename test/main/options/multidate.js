@@ -274,15 +274,15 @@ describe('options - multi date', function () {
       const dp = new Datepicker(input, {maxNumberOfDates: 3});
 
       expect(dp.getDate(), 'to equal', []);
-      expect(dp.getDate('yyyy-mm-dd'), 'to equal', []);
+      expect(dp.getDate('yyyy-MM-dd'), 'to equal', []);
 
       dp.setDate('2/11/2020', '2/7/2020', '2/14/2020');
       expect(dp.getDate(), 'to equal', [new Date(2020, 1, 11), new Date(2020, 1, 7), new Date(2020, 1, 14)]);
-      expect(dp.getDate('yyyy-mm-dd'), 'to equal', ['2020-02-11', '2020-02-07', '2020-02-14']);
+      expect(dp.getDate('yyyy-MM-dd'), 'to equal', ['2020-02-11', '2020-02-07', '2020-02-14']);
 
       dp.setDate('2/7/2020', {clear: true});
       expect(dp.getDate(), 'to equal', [new Date(2020, 1, 7)]);
-      expect(dp.getDate('d M, yyyy'), 'to equal', ['7 Feb, 2020']);
+      expect(dp.getDate('d MMM, yyyy'), 'to equal', ['7 Feb, 2020']);
 
       const changeDateListener = (e) => {
         evt = e;

@@ -13,6 +13,6 @@ export default {
     monthsTitle: 'Måneder',
     clear: 'Nullstill',
     weekStart: 1,
-    format: 'dd.mm.yyyy'
+    format: 'dd.MM.yyyy'
   }
 };

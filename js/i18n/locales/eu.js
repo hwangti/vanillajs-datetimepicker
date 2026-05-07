@@ -13,6 +13,6 @@ export default {
     monthsTitle: "Hilabeteak",
     clear: "Ezabatu",
     weekStart: 1,
-    format: "yyyy/mm/dd"
+    format: "yyyy/MM/dd"
   }
 };

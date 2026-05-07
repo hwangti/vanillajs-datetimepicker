@@ -204,7 +204,7 @@ Whether to show the date picker when the associated input filed has the `readonl
 
 #### format
 - Type: `String`|`Object`
-- Default: `'mm/dd/yyyy'`
+- Default: `'MM/dd/yyyy'`
 
 [Date format](date-string+format?id=date-format) string.
 

@@ -13,6 +13,6 @@ export default {
     monthsTitle: "මාස",
     clear: "මකන්න",
     weekStart: 0,
-    format: "yyyy-mm-dd"
+    format: "yyyy-MM-dd"
   }
 };
