@@ -20,6 +20,26 @@ function setupDatepicker(rangepicker, changeDateListener, el, options) {
   new Datepicker(el, options, rangepicker);
 }
 
+// Datepicker.setDate(...args) treats only the LAST object arg as options. If
+// we pass a sentinel like {clear:true} AND an options object separately, the
+// sentinel ends up in the date input slot and crashes the parser. Merge them
+// into one options object instead. String/Date values still go via two-arg form.
+function callSetDate(dp, value, options) {
+  if (!options) {
+    dp.setDate(value);
+    return;
+  }
+  const isSentinel = value
+    && typeof value === 'object'
+    && !(value instanceof Date)
+    && !Array.isArray(value);
+  if (isSentinel) {
+    dp.setDate(Object.assign({}, value, options));
+  } else {
+    dp.setDate(value, options);
+  }
+}
+
 function onChangeDate(rangepicker, ev) {
   // to prevent both datepickers trigger the other side's update each other
   if (rangepicker._updating) {
@@ -180,8 +200,10 @@ export default class DateRangePicker  {
    * or {clear: true} to clear the date
    * @param {Date|Number|String|Object} rangeEnd - End date of the range
    * or {clear: true} to clear the date
+   * @param {Object} [options] - forwarded to each Datepicker.setDate call
+   *   (see Datepicker.setDate docs — autohide, render, viewDate, etc.)
    */
-  setDates(rangeStart, rangeEnd) {
+  setDates(rangeStart, rangeEnd, options) {
     const {
       datepickers: [datepicker0, datepicker1],
       inputs: [input0, input1],
@@ -194,8 +216,8 @@ export default class DateRangePicker  {
     // date. To prevent this, the normalization process needs to run once after
     // both of the new dates are set.
     this._updating = true;
-    datepicker0.setDate(rangeStart);
-    datepicker1.setDate(rangeEnd);
+    callSetDate(datepicker0, rangeStart, options);
+    callSetDate(datepicker1, rangeEnd, options);
     delete this._updating;
 
     if (datepicker1.dates[0] !== origDate1) {
