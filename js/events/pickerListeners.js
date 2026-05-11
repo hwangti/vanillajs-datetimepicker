@@ -104,5 +104,8 @@ export function onChangeTime(datepicker, ev) {
   // base date: last selected, else picker's view date
   const base = new Date(dates.length > 0 ? dates[dates.length - 1] : picker.viewDate);
   base.setHours(h, m, 0, 0);
-  datepicker.setDate(base.getTime());
+  // Force autohide=false: time controls send 'input' on every slider tick,
+  // so respecting config.autohide would close the popup mid-interaction.
+  // The user dismisses the popup via outside click or ESC, not by adjusting time.
+  datepicker.setDate(base.getTime(), {autohide: false});
 }

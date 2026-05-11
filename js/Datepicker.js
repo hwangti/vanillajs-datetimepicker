@@ -43,6 +43,17 @@ function processInputDates(datepicker, inputDates, clear = false) {
     }
     if (!config.pickTime) {
       date = stripTime(date);
+    } else if (config.minuteStep > 1) {
+      // Snap minutes typed directly into the input field to the configured step,
+      // matching the picker UI's slider/number-input behavior. Cap at the same
+      // ceiling as the slider (Math.floor(59/step)*step) so e.g. step=5 gives
+      // a max of 55 — never 60.
+      const step = config.minuteStep;
+      const max = Math.floor(59 / step) * step;
+      const d = new Date(date);
+      const snapped = Math.min(max, Math.round(d.getMinutes() / step) * step);
+      d.setMinutes(snapped, 0, 0);
+      date = d.getTime();
     }
     // adjust to 1st of the month/Jan 1st of the year
     // or to the last day of the monh/Dec 31st of the year if the datepicker
