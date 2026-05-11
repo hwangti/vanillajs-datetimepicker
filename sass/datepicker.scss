@@ -31,6 +31,7 @@ $dp-title-background-color: $light !default;
 $dp-cell-size-base: 2.25rem !default;
 $dp-cell-focus-background-color: color.scale($light, $lightness: -5%) !default;
 $dp-cell-prevnext-color: hsl(0, 0%, 48%) !default; // grey
+$dp-cell-prevnext-opacity: 0.5 !default; // soften prev/next-month cells
 $dp-cell-disabled-color: $grey-lighter !default;
 $dp-cell-selected-background-color: $link !default;
 $dp-cell-selected-color: #fff !default; // link(blue)-invert
@@ -396,6 +397,7 @@ $dp-one-seventh: math.percentage(math.div(1, 7));
   &.next {
     &:not(.disabled) {
       color: $dp-cell-prevnext-color;
+      opacity: $dp-cell-prevnext-opacity;
     }
 
     &.selected {
