@@ -47,6 +47,13 @@ $dp-week-color: $grey-light !default;
 
 $dp-footer-background-color: $light !default;
 
+$dp-time-slider-track-color: $grey-lighter !default;
+$dp-time-slider-track-height: 4px !default;
+$dp-time-slider-track-radius: $dp-border-radius-small !default;
+$dp-time-slider-thumb-color: $link !default;
+$dp-time-slider-thumb-size: 14px !default;
+$dp-time-slider-thumb-radius: $dp-border-radius-small !default;
+
 $dp-input-in-edit-border-color: color.scale($link, $lightness: -5%) !default;
 $dp-input-in-edit-focus-box-shadow-size: 0 0 0.25em 0.25em !default;
 
@@ -167,7 +174,49 @@ $dp-one-seventh: math.percentage(math.div(1, 7));
     flex: 1 1 auto;
     min-width: 80px;
     margin-left: 8px;
-    accent-color: #4a90e2;
+    -webkit-appearance: none;
+    appearance: none;
+    height: $dp-time-slider-thumb-size;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::-webkit-slider-runnable-track {
+      height: $dp-time-slider-track-height;
+      background: $dp-time-slider-track-color;
+      border-radius: $dp-time-slider-track-radius;
+      cursor: pointer;
+    }
+    &::-moz-range-track {
+      height: $dp-time-slider-track-height;
+      background: $dp-time-slider-track-color;
+      border-radius: $dp-time-slider-track-radius;
+      cursor: pointer;
+    }
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: $dp-time-slider-thumb-size;
+      height: $dp-time-slider-thumb-size;
+      margin-top: math.div($dp-time-slider-track-height - $dp-time-slider-thumb-size, 2);
+      border: none;
+      border-radius: $dp-time-slider-thumb-radius;
+      background: $dp-time-slider-thumb-color;
+      cursor: pointer;
+    }
+    &::-moz-range-thumb {
+      width: $dp-time-slider-thumb-size;
+      height: $dp-time-slider-thumb-size;
+      border: none;
+      border-radius: $dp-time-slider-thumb-radius;
+      background: $dp-time-slider-thumb-color;
+      cursor: pointer;
+    }
   }
 }
 
