@@ -89,8 +89,8 @@ function onChangeDate(rangepicker, ev) {
 export default class DateRangePicker  {
   /**
    * Create a date range picker
-   * @param  {Element} element - element to bind a date range picker
-   * @param  {Object} [options] - config options
+   * @param  {HTMLElement} element - element to bind a date range picker
+   * @param  {import('./types.js').DateRangePickerOptions} [options] - config options
    */
   constructor(element, options = {}) {
     let inputs = Array.isArray(options.inputs)
@@ -130,7 +130,7 @@ export default class DateRangePicker  {
 
   /**
    * Set new values to the config options
-   * @param {Object} options - config options to update
+   * @param {import('./types.js').DateRangePickerOptions} options - config options to update
    */
   setOptions(options) {
     this.allowOneSidedRange = !!options.allowOneSidedRange;
@@ -196,11 +196,11 @@ export default class DateRangePicker  {
    * it gets normalized based on the last change at the end of the changing
    * process.
    *
-   * @param {Date|Number|String|Object} rangeStart - Start date of the range
+   * @param {import('./types.js').DateLike | { clear: true }} rangeStart - Start date of the range
    * or {clear: true} to clear the date
-   * @param {Date|Number|String|Object} rangeEnd - End date of the range
+   * @param {import('./types.js').DateLike | { clear: true }} rangeEnd - End date of the range
    * or {clear: true} to clear the date
-   * @param {Object} [options] - forwarded to each Datepicker.setDate call
+   * @param {import('./types.js').DatepickerSetDateOptions} [options] - forwarded to each Datepicker.setDate call
    *   (see Datepicker.setDate docs — autohide, render, viewDate, etc.)
    */
   setDates(rangeStart, rangeEnd, options) {

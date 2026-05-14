@@ -189,4 +189,56 @@ describe('DateRangePicker', function () {
       expect(stubDP1SetOptions.args, 'to equal', [[{foo: 123, bar: 456}]]);
     });
   });
+
+  describe('setDates() with pickTime', function () {
+    it('keeps the start and end times independent', function () {
+      const drp = new DateRangePicker(elem, {pickTime: true});
+      const start = new Date(2024, 2, 15, 9, 30);
+      const end = new Date(2024, 2, 16, 18, 45);
+
+      drp.setDates(start, end);
+
+      expect(new Date(drp.dates[0]).getHours(), 'to be', 9);
+      expect(new Date(drp.dates[0]).getMinutes(), 'to be', 30);
+      expect(new Date(drp.dates[1]).getHours(), 'to be', 18);
+      expect(new Date(drp.dates[1]).getMinutes(), 'to be', 45);
+    });
+
+    it('preserves time on the same calendar day for both ends', function () {
+      const drp = new DateRangePicker(elem, {pickTime: true});
+      const start = new Date(2024, 2, 15, 9, 0);
+      const end = new Date(2024, 2, 15, 17, 30);
+
+      drp.setDates(start, end);
+
+      expect(drp.dates[0], 'to be', start.getTime());
+      expect(drp.dates[1], 'to be', end.getTime());
+    });
+
+    it('strips time on both ends when pickTime is false (default)', function () {
+      const drp = new DateRangePicker(elem);
+      const start = new Date(2024, 2, 15, 9, 30);
+      const end = new Date(2024, 2, 16, 18, 45);
+
+      drp.setDates(start, end);
+
+      expect(new Date(drp.dates[0]).getHours(), 'to be', 0);
+      expect(new Date(drp.dates[0]).getMinutes(), 'to be', 0);
+      expect(new Date(drp.dates[1]).getHours(), 'to be', 0);
+      expect(new Date(drp.dates[1]).getMinutes(), 'to be', 0);
+    });
+
+    it('forwards the third options argument to each datepicker.setDate()', function () {
+      const drp = new DateRangePicker(elem);
+      const stubDP0SetDate = sinon.stub(drp.datepickers[0], 'setDate').callsFake(() => {});
+      const stubDP1SetDate = sinon.stub(drp.datepickers[1], 'setDate').callsFake(() => {});
+
+      const start = new Date(2024, 2, 15);
+      const end = new Date(2024, 2, 16);
+      drp.setDates(start, end, {render: false});
+
+      expect(stubDP0SetDate.calledWith(start, {render: false}), 'to be true');
+      expect(stubDP1SetDate.calledWith(end, {render: false}), 'to be true');
+    });
+  });
 });

@@ -298,5 +298,35 @@ describe('lib/date', function () {
       expect(regularizeDate(date, {}, true), 'to be', date);
       expect(regularizeDate(NaN, null, false), 'to be NaN');
     });
+
+    it('strips hour/minute/second/ms when keepTime is false (default)', function () {
+      const dateWithTime = new Date(2020, 5, 15, 14, 30, 45, 678);
+      expect(regularizeDate(dateWithTime, 1, false), 'to be', new Date(2020, 5, 1).getTime());
+      expect(regularizeDate(dateWithTime, 1, true), 'to be', new Date(2020, 5, 30).getTime());
+      expect(regularizeDate(dateWithTime, 2, false), 'to be', new Date(2020, 0, 1).getTime());
+      expect(regularizeDate(dateWithTime, 2, true), 'to be', new Date(2020, 11, 31).getTime());
+    });
+
+    it('preserves hour/minute/second/ms when keepTime is true', function () {
+      const dateWithTime = new Date(2020, 5, 15, 14, 30, 45, 678);
+
+      // timeSpan = 1, useLastDate = false → first of the month, time preserved
+      expect(regularizeDate(dateWithTime, 1, false, true), 'to be', new Date(2020, 5, 1, 14, 30, 45, 678).getTime());
+
+      // timeSpan = 1, useLastDate = true → last day of the month, time preserved
+      expect(regularizeDate(dateWithTime, 1, true, true), 'to be', new Date(2020, 5, 30, 14, 30, 45, 678).getTime());
+
+      // timeSpan = 2, useLastDate = false → Jan 1, time preserved
+      expect(regularizeDate(dateWithTime, 2, false, true), 'to be', new Date(2020, 0, 1, 14, 30, 45, 678).getTime());
+
+      // timeSpan = 2, useLastDate = true → Dec 31, time preserved
+      expect(regularizeDate(dateWithTime, 2, true, true), 'to be', new Date(2020, 11, 31, 14, 30, 45, 678).getTime());
+    });
+
+    it('keepTime=true with midnight input behaves the same as keepTime=false', function () {
+      const midnight = new Date(2020, 5, 15, 0, 0, 0, 0);
+      expect(regularizeDate(midnight, 1, false, true), 'to be', regularizeDate(midnight, 1, false));
+      expect(regularizeDate(midnight, 1, true, true), 'to be', regularizeDate(midnight, 1, true));
+    });
   });
 });

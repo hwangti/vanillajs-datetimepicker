@@ -339,11 +339,12 @@ If an invalid date, the same date as the current one or an option object without
 When the [`allowOneSidedRange`](options?id=allowonesidedrange) config option is `false`, passing `{clear: true}` to clear the range works only when it is done to the last effective argument (in other words, passed to `rangeEnd` or to `rangeStart` along with ineffective `rangeEnd`). This is because when the date range is changed, it gets normalized based on the last change at the end of the changing process.
 
 ```javascript
-rangepicker.setDates( rangeStart , rangeEnd )
+rangepicker.setDates( rangeStart , rangeEnd [, options] )
 ```
 - **Arguments:**
   - `rangeStart` : {`Date`|`Number`|`String)`|`Object`} - Start date of the range or `{clear: true}` to clear the date
   - `rangeEnd` : {`Date`|`Number`|`String)`|`Object`} - End date of the range or `{clear: true}` to clear the date
+  - `options` : {`Object`} - *(optional)* forwarded to each [`datepicker.setDate()`](api?id=datepickersetdate) call. Use this to pass options that apply to both ends of the range (e.g. `{autohide: true}`, `{render: false}`, `{viewDate: ...}`). Note that `{clear: true}` is meaningful only when passed in place of `rangeStart`/`rangeEnd`, not via this options object.
 
 #### rangepicker.setOptions()
 

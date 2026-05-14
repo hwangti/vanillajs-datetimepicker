@@ -1,22 +1,46 @@
 {
-  "name": "vanillajs-datetimepicker",
-  "version": "1.3.4",
-  "description": "Fork of vanillajs-datepicker adding time picker (pickTime, minuteStep) and Java/Moment format tokens",
+  "name": "@hwangti/vanillajs-datetimepicker",
+  "version": "2.0.0-beta.0",
+  "description": "Fork of vanillajs-datepicker that adds a 24-hour time picker (pickTime, minuteStep), switches format tokens to the Java/Moment convention, and ships TypeScript types.",
   "type": "module",
   "module": "js/main.js",
+  "types": "./types/main.d.ts",
   "exports": {
-    ".": "./js/main.js",
-    "./Datepicker": "./js/Datepicker.js",
-    "./DateRangePicker": "./js/DateRangePicker.js",
+    ".": {
+      "types": "./types/main.d.ts",
+      "import": "./js/main.js"
+    },
+    "./Datepicker": {
+      "types": "./types/Datepicker.d.ts",
+      "import": "./js/Datepicker.js"
+    },
+    "./DateRangePicker": {
+      "types": "./types/DateRangePicker.d.ts",
+      "import": "./js/DateRangePicker.js"
+    },
+    "./types": {
+      "types": "./types/types.d.ts",
+      "import": "./js/types.js"
+    },
     "./locales/*": "./js/i18n/locales/*.js",
     "./sass/*": "./sass/*",
     "./css/*": "./dist/css/*"
   },
+  "files": [
+    "js",
+    "sass",
+    "dist",
+    "types",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "build:js": "rollup -c",
     "build:locales": "node scripts/build-locales.js",
     "build:css": "node scripts/build-css.js",
-    "build": "npm run build:js && npm run build:locales && npm run build:css",
+    "build:types": "tsc -p tsconfig.types.json",
+    "build": "npm run build:js && npm run build:locales && npm run build:css && npm run build:types",
     "minify:js": "node scripts/minify-js.js",
     "minify:css": "node scripts/minify-css.js",
     "minify": "npm run minify:js && npm run minify:css",
@@ -36,15 +60,18 @@
     "datepicker",
     "datetimepicker",
     "timepicker",
+    "datetime",
+    "time",
     "bulma",
     "bootstrap",
     "vanilla",
     "javascript",
+    "typescript",
     "scss"
   ],
-  "author": "Hidenao Miyamoto",
+  "author": "TAEROK HWANG",
   "contributors": [
-    "TAEROK HWANG"
+    "Hidenao Miyamoto (original vanillajs-datepicker author)"
   ],
   "license": "MIT",
   "bugs": {
@@ -70,6 +97,7 @@
     "simulant": "^0.2.2",
     "sinon": "^15.0.1",
     "terser": "^5.10.0",
+    "typescript": "^6.0.3",
     "unexpected": "^13.1.0"
   }
 }

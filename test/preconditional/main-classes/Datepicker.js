@@ -645,4 +645,56 @@ describe('Datepicker', function () {
       testContainer.removeChild(input);
     });
   });
+
+  // regression guard: at the default pickLevel (0 = day), regularizeDate is
+  // a no-op, so min/maxDate retain their hour/minute even when keepTime is
+  // not explicitly forwarded by processOptions. If a future change makes
+  // regularizeDate strip time at pickLevel=0, these tests will catch it.
+  describe('min/maxDate with pickTime', function () {
+    let input;
+
+    beforeEach(function () {
+      input = document.createElement('input');
+      testContainer.appendChild(input);
+    });
+
+    afterEach(function () {
+      if (input.datepicker) {
+        input.datepicker.destroy();
+      }
+      testContainer.removeChild(input);
+    });
+
+    it('preserves hour/minute on minDate when pickTime is true', function () {
+      const minDate = new Date(2024, 2, 15, 9, 30);
+      const dp = new Datepicker(input, {pickTime: true, minDate});
+      expect(dp.config.minDate, 'to be', minDate.getTime());
+    });
+
+    it('preserves hour/minute on maxDate when pickTime is true', function () {
+      const maxDate = new Date(2024, 2, 15, 17, 45);
+      const dp = new Datepicker(input, {pickTime: true, maxDate});
+      expect(dp.config.maxDate, 'to be', maxDate.getTime());
+    });
+
+    it('rejects a same-day time before minDate', function () {
+      const dp = new Datepicker(input, {
+        pickTime: true,
+        minDate: new Date(2024, 2, 15, 9, 0),
+      });
+      // 08:00 same day → before minDate, should be rejected
+      dp.setDate(new Date(2024, 2, 15, 8, 0));
+      expect(dp.dates, 'to equal', []);
+    });
+
+    it('accepts a same-day time after minDate', function () {
+      const dp = new Datepicker(input, {
+        pickTime: true,
+        minDate: new Date(2024, 2, 15, 9, 0),
+      });
+      const target = new Date(2024, 2, 15, 10, 0);
+      dp.setDate(target);
+      expect(dp.dates, 'to equal', [target.getTime()]);
+    });
+  });
 });

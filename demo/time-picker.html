@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -28,48 +28,47 @@
     </style>
   </head>
   <body>
-    <h1>Datepicker — 시간 선택(time picker) 데모</h1>
+    <h1>Datepicker — Time Picker Demo</h1>
 
     <div class="row">
-      <label for="dt1">기본 (pickTime: false) — 날짜만</label>
+      <label for="dt1">Default (pickTime: false) — date only</label>
       <input id="dt1" class="dp" type="text" placeholder="yyyy-MM-dd">
       <div class="out" id="out1"></div>
     </div>
 
     <div class="row">
-      <label for="dt2">pickTime: true, minuteStep: 1 (기본 정밀도)</label>
+      <label for="dt2">pickTime: true, minuteStep: 1 (per-minute precision)</label>
       <input id="dt2" class="dp" type="text" placeholder="yyyy-MM-dd HH:mm">
       <div class="out" id="out2"></div>
     </div>
 
     <div class="row">
-      <label for="dt3">pickTime: true, minuteStep: 15 (15분 단위)</label>
+      <label for="dt3">pickTime: true, minuteStep: 15 (15-minute steps)</label>
       <input id="dt3" class="dp" type="text" placeholder="yyyy-MM-dd HH:mm">
       <div class="out" id="out3"></div>
     </div>
 
     <div class="row">
-      <label>DateRangePicker + pickTime (시작 ~ 끝)</label>
+      <label>DateRangePicker + pickTime (start — end)</label>
       <div id="rangeWrap" style="display:flex; gap:0.5rem; align-items:center;">
-        <input id="rangeStart" class="dp" type="text" placeholder="시작">
+        <input id="rangeStart" class="dp" type="text" placeholder="start">
         <span>~</span>
-        <input id="rangeEnd" class="dp" type="text" placeholder="끝">
+        <input id="rangeEnd" class="dp" type="text" placeholder="end">
       </div>
       <div class="out" id="outRange"></div>
     </div>
 
-    <h2>설정 코드</h2>
+    <h2>Configuration</h2>
     <pre><code>new Datepicker(input, {
   format: 'yyyy-MM-dd HH:mm',
   pickTime: true,
-  minuteStep: 15,         // 1, 5, 10, 15, 30 등
+  minuteStep: 15,         // 1, 5, 10, 15, 30, ...
   todayButton: true,
-  todayButtonMode: 1,     // 0=focus만, 1=오늘 날짜를 바로 선택
+  todayButtonMode: 1,     // 0 = focus only, 1 = select today immediately
   clearButton: true,
 });</code></pre>
 
     <script src="../dist/js/datepicker-full.js"></script>
-    <script src="../dist/js/locales/ko.js"></script>
     <script>
       /* global Datepicker */
       function bind(id, opts, outId) {
@@ -86,7 +85,6 @@
       }
 
       const common = {
-        language: 'ko',
         todayButton: true,
         todayButtonMode: 1,
         clearButton: true,

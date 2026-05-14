@@ -184,6 +184,34 @@ describe('lib/date', function () {
       expect(parseDate('15/03/1984', 'd/M/yy'), 'to be', new Date(1984, 2, 15).getTime());
     });
 
+    it('uses format: "H" or "HH" as hour (24-hour) to parse date string', function () {
+      expect(parseDate('2024-03-15 9:30', 'yyyy-MM-dd H:mm'), 'to be', new Date(2024, 2, 15, 9, 30).getTime());
+      expect(parseDate('2024-03-15 09:30', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 9, 30).getTime());
+      expect(parseDate('2024-03-15 23:00', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 23, 0).getTime());
+      expect(parseDate('2024-03-15 00:00', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 0, 0).getTime());
+
+      // tolerant of missing leading zero when format demands it
+      expect(parseDate('2024-03-15 9:5', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 9, 5).getTime());
+    });
+
+    it('uses format: "m" or "mm" as minute to parse date string', function () {
+      expect(parseDate('2024-03-15 09:5', 'yyyy-MM-dd HH:m'), 'to be', new Date(2024, 2, 15, 9, 5).getTime());
+      expect(parseDate('2024-03-15 09:05', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 9, 5).getTime());
+      expect(parseDate('2024-03-15 09:59', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 9, 59).getTime());
+      expect(parseDate('2024-03-15 09:00', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 9, 0).getTime());
+    });
+
+    it('ignores invalid hour/minute parts and keeps the rest', function () {
+      // non-numeric → setHours/setMinutes returns NaN → reducer skips that step,
+      // so only the unparsable part is dropped, year/month/day still apply
+      const result = parseDate('2024-03-15 xx:30', 'yyyy-MM-dd HH:mm');
+      const d = new Date(result);
+      expect(d.getFullYear(), 'to be', 2024);
+      expect(d.getMonth(), 'to be', 2);
+      expect(d.getDate(), 'to be', 15);
+      expect(d.getMinutes(), 'to be', 30);
+    });
+
     it('ignores "D" and "DD" (day of week)', function () {
       let date = parseDate('2012-03-05', 'yyyy-MM-dd-D');
       expect(date, 'to be', new Date(2012, 2, 5).getTime());
@@ -295,6 +323,30 @@ describe('lib/date', function () {
       expect(formatDate(new Date(0, 2, 5).setFullYear(2), 'yyyy-MM-dd', locales.en), 'to be', '0002-03-05');
       expect(formatDate(new Date(0, 2, 5).setFullYear(12), 'yyyy-MM-dd', locales.en), 'to be', '0012-03-05');
       expect(formatDate(new Date(2012, 2, 5), 'yyyy-MM-dd', locales.en), 'to be', '2012-03-05');
+    });
+
+    it('uses format: "H" as hour (24-hour) without leading zero', function () {
+      expect(formatDate(new Date(2024, 2, 15, 9, 5), 'yyyy-MM-dd H:mm', locales.en), 'to be', '2024-03-15 9:05');
+      expect(formatDate(new Date(2024, 2, 15, 0, 0), 'H', locales.en), 'to be', '0');
+      expect(formatDate(new Date(2024, 2, 15, 23, 0), 'H', locales.en), 'to be', '23');
+    });
+
+    it('uses format: "HH" as hour (24-hour) with leading zero', function () {
+      expect(formatDate(new Date(2024, 2, 15, 9, 5), 'yyyy-MM-dd HH:mm', locales.en), 'to be', '2024-03-15 09:05');
+      expect(formatDate(new Date(2024, 2, 15, 0, 0), 'HH', locales.en), 'to be', '00');
+      expect(formatDate(new Date(2024, 2, 15, 23, 0), 'HH', locales.en), 'to be', '23');
+    });
+
+    it('uses format: "m" as minute without leading zero', function () {
+      expect(formatDate(new Date(2024, 2, 15, 9, 5), 'HH:m', locales.en), 'to be', '09:5');
+      expect(formatDate(new Date(2024, 2, 15, 9, 0), 'HH:m', locales.en), 'to be', '09:0');
+      expect(formatDate(new Date(2024, 2, 15, 9, 59), 'HH:m', locales.en), 'to be', '09:59');
+    });
+
+    it('uses format: "mm" as minute with leading zero', function () {
+      expect(formatDate(new Date(2024, 2, 15, 9, 5), 'HH:mm', locales.en), 'to be', '09:05');
+      expect(formatDate(new Date(2024, 2, 15, 9, 0), 'HH:mm', locales.en), 'to be', '09:00');
+      expect(formatDate(new Date(2024, 2, 15, 9, 59), 'HH:mm', locales.en), 'to be', '09:59');
     });
 
     it('accepts separators come before and after the date numbers', function () {

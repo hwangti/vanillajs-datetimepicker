@@ -1,5 +1,28 @@
 # changelog
 
+## 2.0.0
+
+This is the first release of the **vanillajs-datetimepicker** fork. The package picks up where vanillajs-datepicker 1.3.4 left off and adds a time picker. See [Migration v1 → v2](docs/migration-v2.md) before upgrading.
+
+### Breaking changes
+
+- **Format token convention switched to Java/Moment style.** `M`/`MM` now mean numeric month, `MMM`/`MMMM` mean month name, and `m`/`mm` mean minute. The default `format` option is `'MM/dd/yyyy'` (was `'mm/dd/yyyy'`). Bundled locales have been migrated; custom locales and `format` strings in your code must be updated.
+
+### New features
+
+- **Time picker** — opt in with `pickTime: true` (default `false`). Renders 24-hour hour/minute controls (number input + range slider, kept in sync) below the calendar. Selected dates retain their hour and minute instead of being normalized to `00:00:00`.
+- **`minuteStep` option** (default `1`) — step size for the minute slider/number input. Typed values that fall between steps are snapped to the nearest valid step.
+- **Hour/minute format tokens** — `H`/`HH` (24-hour) and `m`/`mm` (minute) for use with `pickTime`.
+- **`hour` / `minute` locale fields** — `base-locales.js` provides `"Hour"` / `"Minute"`; the `ko` locale ships with `시` / `분`. Other locales fall back to English until contributed.
+- **`DateRangePicker.setDates(start, end, options)`** — third argument is forwarded to each `datepicker.setDate()` call (e.g. `{render: false}`, `{viewDate: ...}`).
+- **TypeScript types** — `.d.ts` files generated from JSDoc and shipped in the package. Option types reachable as `import type { DatepickerOptions } from '@hwangti/vanillajs-datetimepicker/types'`.
+
+### Tweaks
+
+- New Sass variable `$dp-cell-prevnext-opacity` softens the appearance of previous/next-month cells in the day grid.
+- `DateRangePicker` no longer counts `<input>` elements inside the picker popup when discovering its bound inputs (`closest('.datepicker')` filter).
+- `DaysView` initialization is guarded against the `DateRangePicker` `dates` getter not being defined yet (prevents a crash on first construction).
+
 ## 1.3.4
 
 ### Bug fix

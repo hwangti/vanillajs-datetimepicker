@@ -4,7 +4,4 @@
 * [API](api.md)
 * [Date String & Format](date-string+format.md)
 * [i18n](i18n.md)
-
-<hr class="divider">
-
-* [Live Online Demo](https://raw.githack.com/mymth/vanillajs-datepicker/v1.3.4/demo/)
+* [Migration v1 → v2](migration-v2.md)

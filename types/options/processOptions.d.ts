@@ -1,0 +1,30 @@
+export default function processOptions(options: any, datepicker: any): {
+    language: any;
+    locale: any;
+    format: any;
+    pickLevel: any;
+    minDate: any;
+    maxDate: any;
+    datesDisabled: any;
+    checkDisabled(timeValue: any, viewId: any): any;
+    defaultViewDate: any;
+    daysOfWeekDisabled: any;
+    daysOfWeekHighlighted: any;
+    weekNumbers: any;
+    getWeekNumber: (timeValue: any, startOfWeek: any) => any;
+    maxNumberOfDates: number;
+    multidate: boolean;
+    dateDelimiter: string;
+    maxView: any;
+    startView: any;
+    prevArrow: NodeListOf<ChildNode>;
+    nextArrow: NodeListOf<ChildNode>;
+    disableTouchKeyboard: boolean;
+    orientation: {
+        x: any;
+        y: any;
+    };
+    pickTime: boolean;
+    minuteStep: number;
+    todayButtonMode: any;
+};

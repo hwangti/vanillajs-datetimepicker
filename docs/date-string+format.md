@@ -10,19 +10,26 @@ Token | Description | Example
 --|--|--
 `d` | day of the month without leading zero | 1, 2, ..., 31
 `dd` |  day of the month with leading zero | 01, 02, ..., 31
-`D` | shortened day name of the week | Sum, Mon, ..., Sat
+`D` | shortened day name of the week | Sun, Mon, ..., Sat
 `DD` | full day name of the week | Sunday, Monday, ..., Saturday
-`m` | numeric month without leading zero | 1, 2, ..., 12
-`mm` | numeric month with leading zero | 01, 02, ..., 12
-`M` | shortened month name | Jan, Feb, ..., Dec
-`MM` | full month name | January, February, ..., December
+`M` | numeric month without leading zero | 1, 2, ..., 12
+`MM` | numeric month with leading zero | 01, 02, ..., 12
+`MMM` | shortened month name | Jan, Feb, ..., Dec
+`MMMM` | full month name | January, February, ..., December
 `y` | year without leading zero | 1, 645, 1900, 2020
 `yy` | 2-digit year with leading zero<br> *(format only, see the notes)* | 01, 45, 00, 20
 `yyyy` | 4-digit year with leading zero | 0001, 0645, 1900, 2020
+`H` | hour (24-hour) without leading zero<br> *(only when [`pickTime`](options?id=picktime) is on)* | 0, 1, ..., 23
+`HH` | hour (24-hour) with leading zero<br> *(only when [`pickTime`](options?id=picktime) is on)* | 00, 01, ..., 23
+`m` | minute without leading zero<br> *(only when [`pickTime`](options?id=picktime) is on)* | 0, 1, ..., 59
+`mm` | minute with leading zero<br> *(only when [`pickTime`](options?id=picktime) is on)* | 00, 01, ..., 59
+
+> **Heads-up for users coming from vanillajs-datepicker 1.x or bootstrap-datepicker:**
+> Token semantics follow the Java/Moment convention now. `M`/`MM` mean **numeric month**, `MMM`/`MMMM` mean **month name**, and `m`/`mm` mean **minute**. See the [Migration Guide](migration-v2.md) for details.
 
 **– Separators:**
 
-All printable ASCII characters other than numbers and alphabets, `年`, `月` and `日`
+All printable ASCII characters other than numbers and alphabets, plus `年`, `月`, `日`, `時` and `分`
 
 **Notes**
 
@@ -36,7 +43,7 @@ All printable ASCII characters other than numbers and alphabets, `年`, `月` an
 
 ## Date string
 
-Date strings are expected to be formatted in the date format set in the [`format`](options?id=format) config option (default: `mm/dd/yyyy`), but it isn't necessary to match the format strictly.
+Date strings are expected to be formatted in the date format set in the [`format`](options?id=format) config option (default: `MM/dd/yyyy`), but it isn't necessary to match the format strictly.
 
 ##### How Built-in Parser parses
 
@@ -53,34 +60,36 @@ There are some cases the parser treats the parts in specific way:
 Here are some examples of how irregular date strings are parsed.
 
 - Different separators from the format:  
-  - if format is `yyyy-mm-dd`, `2020/04/22` ⟹ _April 22nd, 2020_
-  - if format is `m.d.y`, `1/15 (2018)` ⟹ _January 15th, 2018_
+  - if format is `yyyy-MM-dd`, `2020/04/22` ⟹ _April 22nd, 2020_
+  - if format is `M.d.y`, `1/15 (2018)` ⟹ _January 15th, 2018_
 - With/without leading zeros:  
-  - if format is `d/m/y`, `05/06/07` ⟹ _June 5th, 0007_
-  - if format is `yyyy-mm-dd`, `20-5-4` ⟹ _May 4th, 0020_
+  - if format is `d/M/y`, `05/06/07` ⟹ _June 5th, 0007_
+  - if format is `yyyy-MM-dd`, `20-5-4` ⟹ _May 4th, 0020_
 - Number for the month name:  
-  - if format is `M-d-y`, `7-14-2020` ⟹ _July 14th, 2020_
+  - if format is `MMM-d-y`, `7-14-2020` ⟹ _July 14th, 2020_
 - Incomplete month name/full name for short name:  
-  - if format is `M-d-y`,
+  - if format is `MMM-d-y`,
     - `ap-22-2020` ⟹ _April 22nd, 2020_
     - `sept-22-2020` ⟹ _September 22nd, 2020_
     - `Ju-4-2020` ⟹ _June 4th, 2020_
     - `July-4-2020` ⟹ _July 4th, 2020_
 - Month/day outside the normal range:  
-  - if format is `mm/dd/yyyy`,
+  - if format is `MM/dd/yyyy`,
     - `14/31/2019` ⟹ _March 2nd, 2020_
     - `0/0/2020` ⟹ _November 30th, 2019_
 - Omitted/missing/invalid parts:  
-  - if format is `mm/yyyy` and current date is _January 15th, 2020_,
+  - if format is `MM/yyyy` and current date is _January 15th, 2020_,
     - `04/2022` ⟹ _April 15th, 2022_
-  - if format is `m/d/y` and current date is _January 15th, 2020_,
+  - if format is `M/d/y` and current date is _January 15th, 2020_,
     - `4/22` ⟹ _April 22nd, 2020_
     - `/22/2016` ⟹ _January 22nd, 2016_
     - `7/xx/2016` ⟹ _July 15th, 2016_
 - Day-of-the-week:
-  - if format is `D m/d y` and current date is _January 15th, 2020_,
+  - if format is `D M/d y` and current date is _January 15th, 2020_,
     - `xx 5/4 2022` ⟹ _May 4th, 2022_
     - `5/4 2022` ⟹ _October 13th, 2025 (= April 2022nd, 2020)_
+- Date with time (when [`pickTime`](options?id=picktime) is on):
+  - if format is `yyyy-MM-dd HH:mm`, `2024-03-15 09:30` ⟹ _March 15th, 2024 09:30_
 
 ##### 'Today' shortcut
 

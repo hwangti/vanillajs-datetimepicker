@@ -1,0 +1,43 @@
+export default class Picker {
+    constructor(datepicker: any);
+    datepicker: any;
+    element: ChildNode;
+    main: any;
+    controls: {
+        title: any;
+        prevButton: any;
+        viewSwitch: any;
+        nextButton: any;
+        todayButton: any;
+        clearButton: any;
+        timeContainer: any;
+        hourInput: any;
+        hourSlider: any;
+        hourLabel: any;
+        minuteInput: any;
+        minuteSlider: any;
+        minuteLabel: any;
+    };
+    viewDate: any;
+    views: (DaysView | MonthsView | YearsView)[];
+    currentView: DaysView | MonthsView | YearsView;
+    setOptions(options: any): void;
+    detach(): void;
+    show(): void;
+    active: boolean;
+    hide(): void;
+    place(): void;
+    setViewSwitchLabel(labelText: any): void;
+    setPrevButtonDisabled(disabled: any): void;
+    setNextButtonDisabled(disabled: any): void;
+    changeView(viewId: any): this;
+    _oldView: DaysView | MonthsView | YearsView;
+    _renderMethod: string;
+    changeFocus(newViewDate: any): this;
+    update(viewDate?: any): this;
+    syncTimeInputs(): void;
+    render(quickRender?: boolean): void;
+}
+import DaysView from './views/DaysView.js';
+import MonthsView from './views/MonthsView.js';
+import YearsView from './views/YearsView.js';

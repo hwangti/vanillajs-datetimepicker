@@ -291,6 +291,12 @@ Minimum limit to selectable date. No limit is applied if `null` is set.
 > If [`pickLevel`](#pickLevel) is changed dynamically to higher level independently, this option will be adjusted automatically to the 1st of the month or January 1st of the year.  
 > This option should be changed together when changing [`pickLevel`](#pickLevel) to lower level dynamically.
 
+#### minuteStep
+- Type: `Number`
+- Default: `1`
+
+Step size (in minutes) for the minute slider/number input. Effective only when [`pickTime`](#pickTime) is `true`. Typical values: `1`, `5`, `10`, `15`, `30`. The slider's max is set automatically so that `step × n ≤ 59` (e.g. `step: 15` ⇒ slider max `45`). When the user types a value that does not fall on a step boundary, it is snapped to the nearest valid step.
+
 #### nextArrow
 - Type: `String`
 - Default: `'»'`
@@ -321,6 +327,24 @@ The level that the date picker allows to pick. `0`:_date_,`1`: _month_ &nbsp;or 
 > When this option is `2`, the selected date becomes January 1st of the year or, if the date picker is the end-date picker of a date range picker, December 31st of the year.
 >
 > Changing this option dynamically affects existing [`datesDisabled`](#datesDisabled) (except when a function is set), [`maxDate`](#maxdate) and [`minDate`](#minDate). This option should be updated together with those options when they are customized.
+
+#### pickTime
+- Type: `Boolean`
+- Default: `false`
+
+Whether to enable the time picker. When `true`, the popup shows hour and minute controls (number input + range slider, kept in sync) below the calendar, and selected dates retain their time component instead of being normalized to `00:00:00`. The format string should include `H`/`HH` and `m`/`mm` tokens to display and parse the time portion (see [Date String & Format](date-string+format.md)).
+
+```js
+new Datepicker(input, {
+  pickTime: true,
+  minuteStep: 15,
+  format: 'yyyy-MM-dd HH:mm'
+});
+```
+
+> Currently 24-hour only. Seconds, AM/PM, and 12-hour tokens (`s`/`ss`, `a`, `h`/`hh`) are planned for a later release.
+>
+> When `false` (default), the picker behaves the same as in vanillajs-datepicker 1.x — stored values have time stripped to `00:00:00`.
 
 #### prevArrow
 - Type: `String`

@@ -1794,7 +1794,10 @@ var Datepicker = (function () {
     // base date: last selected, else picker's view date
     const base = new Date(dates.length > 0 ? dates[dates.length - 1] : picker.viewDate);
     base.setHours(h, m, 0, 0);
-    datepicker.setDate(base.getTime());
+    // Force autohide=false: time controls send 'input' on every slider tick,
+    // so respecting config.autohide would close the popup mid-interaction.
+    // The user dismisses the popup via outside click or ESC, not by adjusting time.
+    datepicker.setDate(base.getTime(), {autohide: false});
   }
 
   const orientClasses = ['left', 'top', 'right', 'bottom'].reduce((obj, key) => {
@@ -2500,6 +2503,17 @@ var Datepicker = (function () {
       }
       if (!config.pickTime) {
         date = stripTime(date);
+      } else if (config.minuteStep > 1) {
+        // Snap minutes typed directly into the input field to the configured step,
+        // matching the picker UI's slider/number-input behavior. Cap at the same
+        // ceiling as the slider (Math.floor(59/step)*step) so e.g. step=5 gives
+        // a max of 55 — never 60.
+        const step = config.minuteStep;
+        const max = Math.floor(59 / step) * step;
+        const d = new Date(date);
+        const snapped = Math.min(max, Math.round(d.getMinutes() / step) * step);
+        d.setMinutes(snapped, 0, 0);
+        date = d.getTime();
       }
       // adjust to 1st of the month/Jan 1st of the year
       // or to the last day of the monh/Dec 31st of the year if the datepicker
@@ -2588,8 +2602,8 @@ var Datepicker = (function () {
   class Datepicker {
     /**
      * Create a date picker
-     * @param  {Element} element - element to bind a date picker
-     * @param  {Object} [options] - config options
+     * @param  {HTMLElement} element - element to bind a date picker
+     * @param  {import('./types.js').DatepickerOptions} [options] - config options
      * @param  {DateRangePicker} [rangepicker] - DateRangePicker instance the
      * date picker belongs to. Use this only when creating date picker as a part
      * of date range picker
@@ -2685,8 +2699,8 @@ var Datepicker = (function () {
 
     /**
      * Format Date object or time value in given format and language
-     * @param  {Date|Number} date - date or time value to format
-     * @param  {String|Object} format - format string or object that contains
+     * @param  {import('./types.js').DateLike} date - date or time value to format
+     * @param  {string | { toDisplay?: Function, toValue?: Function }} format - format string or object that contains
      * toDisplay() custom formatter, whose signature is
      * - args:
      *   - date: {Date} - Date instance of the date passed to the method
@@ -2703,9 +2717,9 @@ var Datepicker = (function () {
 
     /**
      * Parse date string
-     * @param  {String|Date|Number} dateStr - date string, Date object or time
+     * @param  {import('./types.js').DateLike} dateStr - date string, Date object or time
      * value to parse
-     * @param  {String|Object} format - format string or object that contains
+     * @param  {string | { toDisplay?: Function, toValue?: Function }} format - format string or object that contains
      * toValue() custom parser, whose signature is
      * - args:
      *   - dateStr: {String|Date|Number} - the dateStr passed to the method
@@ -2721,7 +2735,7 @@ var Datepicker = (function () {
     }
 
     /**
-     * @type {Object} - Installed locales in `[languageCode]: localeObject` format
+     * @type {Record<string, import('./types.js').DatepickerLocale>} - Installed locales in `[languageCode]: localeObject` format
      * en`:_English (US)_ is pre-installed.
      */
     static get locales() {
@@ -2744,7 +2758,7 @@ var Datepicker = (function () {
 
     /**
      * Set new values to the config options
-     * @param {Object} options - config options to update
+     * @param {import('./types.js').DatepickerOptions} options - config options to update
      */
     setOptions(options) {
       const newOptions = processOptions(options, this);
@@ -2870,9 +2884,8 @@ var Datepicker = (function () {
      * If viewDate option is used, the method changes the focused date to the
      * specified date instead of the last item of the selection.
      *
-     * @param {...(Date|Number|String)|Array} [dates] - Date strings, Date
-     * objects, time values or mix of those for new selection
-     * @param {Object} [options] - function options
+     * @param {...(import('./types.js').DateLike | import('./types.js').DatepickerSetDateOptions)} dates - Date strings, Date
+     * objects, time values, an options object, or a mix of those for new selection
      * - clear: {boolean} - Whether to clear the existing selection
      *     default: false
      * - render: {boolean} - Whether to re-render the picker element
@@ -2923,7 +2936,7 @@ var Datepicker = (function () {
      * forceRefresh: true option is used, the picker element is refreshed in
      * these cases too.
      *
-     * @param  {Object} [options] - function options
+     * @param  {import('./types.js').DatepickerSetDateOptions} [options] - function options
      * - autohide: {boolean} - whether to hide the picker element after refresh
      *     default: false
      * - revert: {boolean} - Whether to refresh the input field when all the
@@ -3028,7 +3041,7 @@ var Datepicker = (function () {
     /**
      * Exit from edit mode
      * Not available on inline picker
-     * @param  {Object} [options] - function options
+     * @param  {{update?: boolean, autohide?: boolean}} [options] - function options
      * - update: {boolean} - whether to call update() after exiting
      *     If false, input field is revert to the existing selection
      *     default: false

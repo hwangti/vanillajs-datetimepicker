@@ -142,8 +142,8 @@ function getOutputConverter(datepicker, format) {
 export default class Datepicker {
   /**
    * Create a date picker
-   * @param  {Element} element - element to bind a date picker
-   * @param  {Object} [options] - config options
+   * @param  {HTMLElement} element - element to bind a date picker
+   * @param  {import('./types.js').DatepickerOptions} [options] - config options
    * @param  {DateRangePicker} [rangepicker] - DateRangePicker instance the
    * date picker belongs to. Use this only when creating date picker as a part
    * of date range picker
@@ -239,8 +239,8 @@ export default class Datepicker {
 
   /**
    * Format Date object or time value in given format and language
-   * @param  {Date|Number} date - date or time value to format
-   * @param  {String|Object} format - format string or object that contains
+   * @param  {import('./types.js').DateLike} date - date or time value to format
+   * @param  {string | { toDisplay?: Function, toValue?: Function }} format - format string or object that contains
    * toDisplay() custom formatter, whose signature is
    * - args:
    *   - date: {Date} - Date instance of the date passed to the method
@@ -257,9 +257,9 @@ export default class Datepicker {
 
   /**
    * Parse date string
-   * @param  {String|Date|Number} dateStr - date string, Date object or time
+   * @param  {import('./types.js').DateLike} dateStr - date string, Date object or time
    * value to parse
-   * @param  {String|Object} format - format string or object that contains
+   * @param  {string | { toDisplay?: Function, toValue?: Function }} format - format string or object that contains
    * toValue() custom parser, whose signature is
    * - args:
    *   - dateStr: {String|Date|Number} - the dateStr passed to the method
@@ -275,7 +275,7 @@ export default class Datepicker {
   }
 
   /**
-   * @type {Object} - Installed locales in `[languageCode]: localeObject` format
+   * @type {Record<string, import('./types.js').DatepickerLocale>} - Installed locales in `[languageCode]: localeObject` format
    * en`:_English (US)_ is pre-installed.
    */
   static get locales() {
@@ -298,7 +298,7 @@ export default class Datepicker {
 
   /**
    * Set new values to the config options
-   * @param {Object} options - config options to update
+   * @param {import('./types.js').DatepickerOptions} options - config options to update
    */
   setOptions(options) {
     const newOptions = processOptions(options, this);
@@ -424,9 +424,8 @@ export default class Datepicker {
    * If viewDate option is used, the method changes the focused date to the
    * specified date instead of the last item of the selection.
    *
-   * @param {...(Date|Number|String)|Array} [dates] - Date strings, Date
-   * objects, time values or mix of those for new selection
-   * @param {Object} [options] - function options
+   * @param {...(import('./types.js').DateLike | import('./types.js').DatepickerSetDateOptions)} dates - Date strings, Date
+   * objects, time values, an options object, or a mix of those for new selection
    * - clear: {boolean} - Whether to clear the existing selection
    *     default: false
    * - render: {boolean} - Whether to re-render the picker element
@@ -477,7 +476,7 @@ export default class Datepicker {
    * forceRefresh: true option is used, the picker element is refreshed in
    * these cases too.
    *
-   * @param  {Object} [options] - function options
+   * @param  {import('./types.js').DatepickerSetDateOptions} [options] - function options
    * - autohide: {boolean} - whether to hide the picker element after refresh
    *     default: false
    * - revert: {boolean} - Whether to refresh the input field when all the
@@ -582,7 +581,7 @@ export default class Datepicker {
   /**
    * Exit from edit mode
    * Not available on inline picker
-   * @param  {Object} [options] - function options
+   * @param  {{update?: boolean, autohide?: boolean}} [options] - function options
    * - update: {boolean} - whether to call update() after exiting
    *     If false, input field is revert to the existing selection
    *     default: false
