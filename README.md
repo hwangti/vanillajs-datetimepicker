@@ -59,7 +59,7 @@ Type definitions are bundled. The option types are also reachable as a separate 
 
 ```ts
 import { Datepicker } from '@hwangti/vanillajs-datetimepicker';
-import type { DatepickerOptions } from 'vanillajs-datetimepicker/types';
+import type { DatepickerOptions } from '@hwangti/vanillajs-datetimepicker/types';
 
 const opts: DatepickerOptions = {
   format: 'yyyy-MM-dd HH:mm',
