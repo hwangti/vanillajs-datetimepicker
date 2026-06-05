@@ -753,6 +753,35 @@ describe('Datepicker', function () {
       expect(minuteInput.max, 'to be', '59');
     });
 
+    it('shows the time controls only on the min view', function () {
+      const dp = new Datepicker(input, {pickTime: true});
+      const {timeContainer} = dp.picker.controls;
+      dp.show();
+
+      // days view (min view for pickLevel 0) — visible
+      expect(timeContainer.style.display, 'to be', '');
+
+      // months/years/decades views — hidden while navigating
+      dp.picker.changeView(1).render();
+      expect(timeContainer.style.display, 'to be', 'none');
+      dp.picker.changeView(2).render();
+      expect(timeContainer.style.display, 'to be', 'none');
+
+      // back to days view — visible again
+      dp.picker.changeView(0).render();
+      expect(timeContainer.style.display, 'to be', '');
+    });
+
+    it('keeps the time controls hidden on every view when pickTime is off', function () {
+      const dp = new Datepicker(input);
+      const {timeContainer} = dp.picker.controls;
+      dp.show();
+
+      expect(timeContainer.style.display, 'to be', 'none');
+      dp.picker.changeView(1).render();
+      expect(timeContainer.style.display, 'to be', 'none');
+    });
+
     it('links the hour/minute captions to the controls via aria-labelledby', function () {
       const dp = new Datepicker(input, {pickTime: true});
       const {hourInput, hourSlider, hourLabel, minuteInput, minuteSlider, minuteLabel}

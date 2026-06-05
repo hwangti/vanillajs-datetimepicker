@@ -528,6 +528,15 @@ export default class Picker {
     delete this._renderMethod;
 
     currentView[renderMethod]();
+    // show the time controls only on the view where dates are actually picked;
+    // hide them while navigating the upper (months/years/decades) views
+    if (datepicker.config.pickTime) {
+      if (currentView.isMinView) {
+        showElement(this.controls.timeContainer);
+      } else {
+        hideElement(this.controls.timeContainer);
+      }
+    }
     if (oldView) {
       this.main.replaceChild(currentView.element, oldView.element);
       triggerDatepickerEvent(datepicker, 'changeView');
