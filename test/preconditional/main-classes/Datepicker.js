@@ -697,4 +697,121 @@ describe('Datepicker', function () {
       expect(dp.dates, 'to equal', [target.getTime()]);
     });
   });
+
+  describe('time controls input event', function () {
+    let input;
+
+    beforeEach(function () {
+      input = document.createElement('input');
+      testContainer.appendChild(input);
+    });
+
+    afterEach(function () {
+      if (input.datepicker) {
+        input.datepicker.destroy();
+      }
+      testContainer.removeChild(input);
+    });
+
+    function changeHourInput(dp, value) {
+      const {hourInput} = dp.picker.controls;
+      hourInput.value = value;
+      hourInput.dispatchEvent(new Event('input'));
+    }
+
+    it('updates the selected date and re-pads the hour input', function () {
+      const dp = new Datepicker(input, {pickTime: true});
+      dp.setDate(new Date(2024, 2, 15, 8, 0));
+
+      // browser wheel/spinner edits set the raw unpadded value ("08" → "9")
+      changeHourInput(dp, '9');
+
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 9, 0).getTime()]);
+      expect(dp.picker.controls.hourInput.value, 'to be', '09');
+    });
+
+    it('narrows the controls\' min/max to the selectable range of the day', function () {
+      const maxDate = new Date(2024, 2, 15, 8, 45);
+      const dp = new Datepicker(input, {pickTime: true, maxDate});
+      const {hourInput, hourSlider, minuteInput, minuteSlider} = dp.picker.controls;
+
+      // selection on the maxDate day, at the boundary hour
+      dp.setDate(new Date(2024, 2, 15, 8, 0));
+      expect(hourInput.max, 'to be', '8');
+      expect(hourSlider.max, 'to be', '8');
+      expect(minuteInput.max, 'to be', '45');
+      expect(minuteSlider.max, 'to be', '45');
+
+      // below the boundary hour, the full minute range is available
+      dp.setDate(new Date(2024, 2, 15, 7, 0));
+      expect(hourInput.max, 'to be', '8');
+      expect(minuteInput.max, 'to be', '59');
+
+      // on another day, the bounds are fully open
+      dp.setDate(new Date(2024, 2, 14, 8, 0));
+      expect(hourInput.max, 'to be', '23');
+      expect(minuteInput.max, 'to be', '59');
+    });
+
+    it('stops a time typed past maxDate at the boundary and keeps controls in sync', function () {
+      const maxDate = new Date(2024, 2, 15, 8, 45);
+      const dp = new Datepicker(input, {pickTime: true, maxDate});
+      dp.setDate(new Date(2024, 2, 15, 8, 0));
+
+      changeHourInput(dp, '9');
+
+      // hour can't go past the boundary; the rest of the time is untouched
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 8, 0).getTime()]);
+      expect(dp.picker.controls.hourInput.value, 'to be', '08');
+      expect(dp.picker.controls.minuteInput.value, 'to be', '00');
+    });
+
+    it('bumps a time typed before minDate up to minDate', function () {
+      const minDate = new Date(2024, 2, 15, 9, 30);
+      const dp = new Datepicker(input, {pickTime: true, minDate});
+      dp.setDate(new Date(2024, 2, 15, 10, 0));
+
+      changeHourInput(dp, '8');
+
+      // hour stops at the boundary hour; minute is raised to minDate's minute
+      expect(dp.dates, 'to equal', [minDate.getTime()]);
+      expect(dp.picker.controls.hourInput.value, 'to be', '09');
+      expect(dp.picker.controls.minuteInput.value, 'to be', '30');
+      expect(dp.picker.controls.hourInput.min, 'to be', '9');
+      expect(dp.picker.controls.minuteInput.min, 'to be', '30');
+    });
+
+    it('keeps controls in sync when the selection is already at maxDate', function () {
+      const maxDate = new Date(2024, 2, 15, 8, 45);
+      const dp = new Datepicker(input, {pickTime: true, maxDate});
+      dp.setDate(maxDate);
+
+      // already at maxDate — editing further must not desync the controls
+      changeHourInput(dp, '9');
+
+      expect(dp.dates, 'to equal', [maxDate.getTime()]);
+      expect(dp.picker.controls.hourInput.value, 'to be', '08');
+      expect(dp.picker.controls.minuteInput.value, 'to be', '45');
+    });
+
+    it('clamps the carried-over time when a day cell near maxDate is clicked', function () {
+      const maxDate = new Date(2024, 2, 15, 8, 45);
+      const dp = new Datepicker(input, {pickTime: true, maxDate});
+      // 14th selected at 14:00 — later than maxDate's time of day
+      dp.setDate(new Date(2024, 2, 14, 14, 0));
+      dp.show();
+
+      // click the 15th (the maxDate day) on the days view
+      const cell = [...dp.picker.element.querySelectorAll('.datepicker-cell')]
+        .find(el => Number(el.dataset.date) === new Date(2024, 2, 15).getTime());
+      cell.dispatchEvent(new Event('mousedown', {bubbles: true}));
+      cell.click();
+
+      // 14:00 is clamped into the 15th's selectable range: the hour stops at
+      // the boundary hour (8); the minute (00) is within bounds and is kept
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 8, 0).getTime()]);
+      expect(dp.picker.controls.hourInput.value, 'to be', '08');
+      expect(dp.picker.controls.minuteInput.value, 'to be', '00');
+    });
+  });
 });

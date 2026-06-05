@@ -1,5 +1,5 @@
 import {lastItemOf, isInRange, limitToRange} from '../lib/utils.js';
-import {today, regularizeDate} from '../lib/date.js';
+import {today, regularizeDate, computeTimeBounds} from '../lib/date.js';
 import {
   parseHTML,
   getParent,
@@ -444,16 +444,29 @@ export default class Picker {
   // into the hour/minute inputs. No-op when pickTime is disabled.
   syncTimeInputs() {
     const {datepicker, controls} = this;
-    if (!datepicker.config.pickTime || !controls.hourInput) {
+    const {config, dates} = datepicker;
+    if (!config.pickTime || !controls.hourInput) {
       return;
     }
-    const {dates} = datepicker;
     const source = new Date(dates.length > 0 ? dates[dates.length - 1] : this.viewDate);
     const h = source.getHours();
     const m = source.getMinutes();
-    controls.hourInput.value = String(h).padStart(2, '0');
+    const step = config.minuteStep || 1;
+    // narrow the controls' min/max to the selectable range of the source's day
+    // so the browser stops wheel/spinner/slider edits right at minDate/maxDate.
+    // bounds must be set before values — assigning a range input a value
+    // outside its current min/max would get clamped by the browser
+    const bounds = computeTimeBounds(source, config.minDate, config.maxDate, step);
+    const minuteMin = h === bounds.hourMin ? bounds.minuteMin : 0;
+    const minuteMax = h === bounds.hourMax ? bounds.minuteMax : Math.floor(59 / step) * step;
+    controls.hourInput.min = controls.hourSlider.min = bounds.hourMin;
+    controls.hourInput.max = controls.hourSlider.max = bounds.hourMax;
+    controls.minuteInput.min = controls.minuteSlider.min = minuteMin;
+    controls.minuteInput.max = controls.minuteSlider.max = minuteMax;
+    const pad = num => String(num).padStart(2, '0');
+    controls.hourInput.value = pad(h);
     controls.hourSlider.value = h;
-    controls.minuteInput.value = String(m).padStart(2, '0');
+    controls.minuteInput.value = pad(m);
     controls.minuteSlider.value = m;
   }
 
