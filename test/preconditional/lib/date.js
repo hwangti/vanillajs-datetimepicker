@@ -12,7 +12,8 @@ import {
   getWesternTradWeek,
   getMidEasternWeek,
   startOfYearPeriod,
-  regularizeDate
+  regularizeDate,
+  computeTimeBounds
 } from '../../../js/lib/date.js';
 
 describe('lib/date', function () {
@@ -327,6 +328,58 @@ describe('lib/date', function () {
       const midnight = new Date(2020, 5, 15, 0, 0, 0, 0);
       expect(regularizeDate(midnight, 1, false, true), 'to be', regularizeDate(midnight, 1, false));
       expect(regularizeDate(midnight, 1, true, true), 'to be', regularizeDate(midnight, 1, true));
+    });
+  });
+
+  describe('computeTimeBounds()', function () {
+    const day = new Date(2020, 5, 15, 12, 0);
+
+    it('returns full bounds when min/maxDate are undefined or on other days', function () {
+      expect(computeTimeBounds(day, undefined, undefined), 'to equal', {
+        hourMin: 0, minuteMin: 0, hourMax: 23, minuteMax: 59,
+      });
+      expect(
+        computeTimeBounds(day, new Date(2020, 5, 14, 9, 0).getTime(), new Date(2020, 5, 16, 17, 0).getTime()),
+        'to equal',
+        {hourMin: 0, minuteMin: 0, hourMax: 23, minuteMax: 59}
+      );
+    });
+
+    it('caps minuteMax to the last reachable step', function () {
+      expect(computeTimeBounds(day, undefined, undefined, 15), 'to equal', {
+        hourMin: 0, minuteMin: 0, hourMax: 23, minuteMax: 45,
+      });
+    });
+
+    it('narrows the bounds on the same day as minDate/maxDate', function () {
+      const minDate = new Date(2020, 5, 15, 9, 30).getTime();
+      const maxDate = new Date(2020, 5, 15, 17, 45).getTime();
+      expect(computeTimeBounds(day, minDate, maxDate), 'to equal', {
+        hourMin: 9, minuteMin: 30, hourMax: 17, minuteMax: 45,
+      });
+    });
+
+    it('snaps boundary minutes inward to the step', function () {
+      const minDate = new Date(2020, 5, 15, 9, 31).getTime();
+      const maxDate = new Date(2020, 5, 15, 17, 43).getTime();
+      expect(computeTimeBounds(day, minDate, maxDate, 5), 'to equal', {
+        hourMin: 9, minuteMin: 35, hourMax: 17, minuteMax: 40,
+      });
+    });
+
+    it('pushes minuteMin to the next minute when minDate has trailing seconds', function () {
+      const minDate = new Date(2020, 5, 15, 9, 30, 10).getTime();
+      const maxDate = new Date(2020, 5, 15, 17, 45, 50).getTime();
+      expect(computeTimeBounds(day, minDate, maxDate), 'to equal', {
+        hourMin: 9, minuteMin: 31, hourMax: 17, minuteMax: 45,
+      });
+    });
+
+    it('carries minuteMin into the next hour when it overflows the last step', function () {
+      const minDate = new Date(2020, 5, 15, 9, 58).getTime();
+      expect(computeTimeBounds(day, minDate, undefined, 5), 'to equal', {
+        hourMin: 10, minuteMin: 0, hourMax: 23, minuteMax: 55,
+      });
     });
   });
 });

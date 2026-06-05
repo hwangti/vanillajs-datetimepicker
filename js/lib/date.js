@@ -119,6 +119,40 @@ export function startOfYearPeriod(date, years) {
   return Math.floor(year / years) * years;
 }
 
+// Compute the selectable hour/minute range for the day of the given date,
+// taking into account minDate/maxDate (which carry a time portion when
+// pickTime is used) and the minute step. Used by pickTime mode.
+// - hourMin/hourMax: inclusive hour bounds for the day
+// - minuteMin/minuteMax: inclusive, step-aligned minute bounds that apply
+//   only while the hour sits at hourMin/hourMax respectively
+export function computeTimeBounds(date, minDate, maxDate, step = 1) {
+  const stepMax = Math.floor(59 / step) * step;
+  const bounds = {hourMin: 0, minuteMin: 0, hourMax: 23, minuteMax: stepMax};
+  const day = stripTime(date);
+  if (minDate !== undefined && day === stripTime(minDate)) {
+    const min = new Date(minDate);
+    bounds.hourMin = min.getHours();
+    // round the boundary minute up to the next step (a trailing second pushes
+    // it to the next minute first); carry into the next hour when it overflows
+    // the last reachable step (e.g. minDate 09:58 with step 5 → from 10:00)
+    const hasSeconds = min.getSeconds() > 0 || min.getMilliseconds() > 0;
+    const minuteMin = Math.ceil((min.getMinutes() + (hasSeconds ? 1 : 0)) / step) * step;
+    if (minuteMin > stepMax) {
+      bounds.hourMin += 1;
+    } else {
+      bounds.minuteMin = minuteMin;
+    }
+  }
+  if (maxDate !== undefined && day === stripTime(maxDate)) {
+    const max = new Date(maxDate);
+    bounds.hourMax = max.getHours();
+    // round the boundary minute down to the previous step (trailing seconds
+    // are simply dropped — the minute itself is still reachable)
+    bounds.minuteMax = Math.floor(max.getMinutes() / step) * step;
+  }
+  return bounds;
+}
+
 // Convert date to the first/last date of the month/year of the date.
 // keepTime preserves hour/minute/second/ms when true (used by pickTime mode)
 export function regularizeDate(date, timeSpan, useLastDate, keepTime = false) {

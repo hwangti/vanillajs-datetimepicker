@@ -1,4 +1,4 @@
-import {addMonths, addYears} from '../lib/date.js';
+import {addMonths, addYears, computeTimeBounds} from '../lib/date.js';
 import {findElementInEventPath} from '../lib/event.js';
 import {goToPrevOrNext, switchView} from './functions.js';
 
@@ -25,14 +25,32 @@ export function onClickNextButton(datepicker) {
   goToPrevOrNext(datepicker, 1);
 }
 
+// Clamp an hour/minute pair into the bounds computed by computeTimeBounds()
+function clampTimeToBounds(h, m, bounds) {
+  if (h <= bounds.hourMin) {
+    h = bounds.hourMin;
+    m = Math.max(m, bounds.minuteMin);
+  }
+  if (h >= bounds.hourMax) {
+    h = bounds.hourMax;
+    m = Math.min(m, bounds.minuteMax);
+  }
+  return [h, m];
+}
+
 // Combine a date timestamp (any time portion) with the picker's current time
 // inputs. Used when pickTime is enabled.
 function applyPickerTime(datepicker, dateValue) {
+  const {config} = datepicker;
   const {hourInput, minuteInput} = datepicker.picker.controls;
   const d = new Date(dateValue);
-  const h = parseInt(hourInput.value, 10);
-  const m = parseInt(minuteInput.value, 10);
-  d.setHours(isNaN(h) ? 0 : h, isNaN(m) ? 0 : m, 0, 0);
+  let h = parseInt(hourInput.value, 10);
+  let m = parseInt(minuteInput.value, 10);
+  // clamp the carried-over time into the clicked day's selectable range so
+  // that picking a day near minDate/maxDate isn't silently rejected
+  const bounds = computeTimeBounds(d, config.minDate, config.maxDate, config.minuteStep || 1);
+  [h, m] = clampTimeToBounds(isNaN(h) ? 0 : h, isNaN(m) ? 0 : m, bounds);
+  d.setHours(h, m, 0, 0);
   return d.getTime();
 }
 
@@ -74,6 +92,7 @@ export function onChangeTime(datepicker, ev) {
   const {config, dates, picker} = datepicker;
   const {hourInput, hourSlider, minuteInput, minuteSlider} = picker.controls;
   const step = config.minuteStep || 1;
+  const stepMax = Math.floor(59 / step) * step;
   const target = ev && ev.target;
   const hourFromSlider = target === hourSlider;
   const minuteFromSlider = target === minuteSlider;
@@ -85,27 +104,25 @@ export function onChangeTime(datepicker, ev) {
   // number input where user can type arbitrary values
   m = isNaN(m)
     ? 0
-    : Math.max(0, Math.min(59, minuteFromSlider ? m : Math.round(m / step) * step));
-
-  // sync paired controls; never overwrite the field the user is typing into
-  if (target !== hourInput && document.activeElement !== hourInput) {
-    hourInput.value = String(h).padStart(2, '0');
-  }
-  if (target !== hourSlider) {
-    hourSlider.value = h;
-  }
-  if (target !== minuteInput && document.activeElement !== minuteInput) {
-    minuteInput.value = String(m).padStart(2, '0');
-  }
-  if (target !== minuteSlider) {
-    minuteSlider.value = m;
-  }
+    : Math.max(0, Math.min(stepMax, minuteFromSlider ? m : Math.round(m / step) * step));
 
   // base date: last selected, else picker's view date
   const base = new Date(dates.length > 0 ? dates[dates.length - 1] : picker.viewDate);
+  // clamp the time into the day's selectable range so a value typed past
+  // minDate/maxDate stops at the boundary instead of being silently rejected
+  // by setDate(). (Wheel/spinner/slider edits are already stopped at the
+  // boundary by the min/max attributes syncTimeInputs() maintains — this
+  // covers directly-typed values and the field the user is editing.)
+  const bounds = computeTimeBounds(base, config.minDate, config.maxDate, step);
+  [h, m] = clampTimeToBounds(h, m, bounds);
   base.setHours(h, m, 0, 0);
   // Force autohide=false: time controls send 'input' on every slider tick,
   // so respecting config.autohide would close the popup mid-interaction.
   // The user dismisses the popup via outside click or ESC, not by adjusting time.
   datepicker.setDate(base.getTime(), {autohide: false});
+  // setDate() skips the picker refresh when the date is rejected (datesDisabled)
+  // or unchanged (clamped back to the current selection); always re-sync the
+  // controls so they reflect the actual selection — this also restores the
+  // zero-padding the browser drops on wheel/spinner edits ("09" -> "9")
+  picker.syncTimeInputs();
 }
