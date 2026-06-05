@@ -20,6 +20,7 @@
  * @property {string[]} months
  * @property {string[]} monthsShort
  * @property {string} today
+ * @property {string} [now]
  * @property {string} [clear]
  * @property {string} format
  * @property {string} [titleFormat]

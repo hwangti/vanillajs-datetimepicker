@@ -1,5 +1,11 @@
 import {limitToRange} from '../lib/utils.js';
-import {today, addMonths, addYears} from '../lib/date.js';
+import {
+  today,
+  addMonths,
+  addYears,
+  computeTimeBounds,
+  clampTimeToBounds,
+} from '../lib/date.js';
 import {isActiveElement} from '../lib/dom.js';
 
 export function triggerDatepickerEvent(datepicker, type) {
@@ -48,8 +54,22 @@ export function clearSelection(datepicker) {
 }
 
 export function goToOrSelectToday(datepicker) {
-  const currentDate = today();
-  if (datepicker.config.todayButtonMode === 1) {
+  const config = datepicker.config;
+  let currentDate = today();
+  if (config.todayButtonMode === 1) {
+    if (config.pickTime) {
+      // when picking time as well, "today" means "now" — snap the current
+      // time to the minute step and clamp it into min/maxDate's bounds
+      const now = new Date();
+      const step = config.minuteStep || 1;
+      const stepMax = Math.floor(59 / step) * step;
+      let h = now.getHours();
+      let m = Math.min(stepMax, Math.round(now.getMinutes() / step) * step);
+      [h, m] = clampTimeToBounds(
+        h, m, computeTimeBounds(now, config.minDate, config.maxDate, step)
+      );
+      currentDate = now.setHours(h, m, 0, 0);
+    }
     datepicker.setDate(currentDate, {forceRefresh: true, viewDate: currentDate});
   } else {
     datepicker.setFocusedDate(currentDate, true);

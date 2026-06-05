@@ -887,5 +887,155 @@ describe('Datepicker', function () {
       expect(dp.picker.controls.hourInput.value, 'to be', '08');
       expect(dp.picker.controls.minuteInput.value, 'to be', '00');
     });
+
+    it('combines the focused date with the time controls on enter key', function () {
+      const maxDate = new Date(2024, 2, 15, 8, 45);
+      const dp = new Datepicker(input, {pickTime: true, maxDate});
+      // 14th selected at 14:00 — the time controls now hold 14:00
+      dp.setDate(new Date(2024, 2, 14, 14, 0));
+      dp.show();
+      dp.setFocusedDate(new Date(2024, 2, 15));
+
+      onKeydown(dp, {key: 'Enter'});
+
+      // carried 14:00 is clamped into the 15th's range: hour stops at 8
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 8, 0).getTime()]);
+    });
+  });
+
+  describe('day-granular min/maxDate handling', function () {
+    let input;
+
+    beforeEach(function () {
+      input = document.createElement('input');
+      testContainer.appendChild(input);
+    });
+
+    afterEach(function () {
+      if (input.datepicker) {
+        input.datepicker.destroy();
+      }
+      testContainer.removeChild(input);
+    });
+
+    it('strips the time portion of min/maxDate when pickTime is off', function () {
+      const dp = new Datepicker(input, {
+        minDate: new Date(2024, 2, 15, 9, 30),
+        maxDate: new Date(2024, 2, 20, 17, 45),
+      });
+      expect(dp.config.minDate, 'to be', new Date(2024, 2, 15).getTime());
+      expect(dp.config.maxDate, 'to be', new Date(2024, 2, 20).getTime());
+    });
+
+    it('keeps the minDate boundary day cell selectable when pickTime is on', function () {
+      const dp = new Datepicker(input, {
+        pickTime: true,
+        minDate: new Date(2024, 2, 15, 9, 30),
+        defaultViewDate: new Date(2024, 2, 15),
+      });
+      dp.show();
+      const cells = [...dp.picker.element.querySelectorAll('.datepicker-cell')];
+      const mar15 = cells.find(el => Number(el.dataset.date) === new Date(2024, 2, 15).getTime());
+      const mar14 = cells.find(el => Number(el.dataset.date) === new Date(2024, 2, 14).getTime());
+
+      expect(mar15.classList.contains('disabled'), 'to be', false);
+      expect(mar14.classList.contains('disabled'), 'to be', true);
+
+      // clicking the boundary day clamps the time up to minDate's time
+      mar15.dispatchEvent(new Event('mousedown', {bubbles: true}));
+      mar15.click();
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 9, 30).getTime()]);
+    });
+
+    it('keeps the today button enabled when minDate is a later time today (pickTime)', function () {
+      const clock = sinon.useFakeTimers({
+        now: new Date(2024, 2, 15, 8, 0).getTime(),
+        toFake: ['Date'],
+      });
+      try {
+        const minDate = new Date(2024, 2, 15, 9, 30);
+        const dp = new Datepicker(input, {pickTime: true, todayButton: true, minDate});
+        expect(dp.picker.controls.todayButton.disabled, 'to be', false);
+      } finally {
+        clock.restore();
+      }
+    });
+  });
+
+  describe('today button with pickTime', function () {
+    let clock;
+    let input;
+
+    beforeEach(function () {
+      // fake "now": 2024-03-15 13:27
+      clock = sinon.useFakeTimers({
+        now: new Date(2024, 2, 15, 13, 27).getTime(),
+        toFake: ['Date'],
+      });
+      input = document.createElement('input');
+      testContainer.appendChild(input);
+    });
+
+    afterEach(function () {
+      if (input.datepicker) {
+        input.datepicker.destroy();
+      }
+      testContainer.removeChild(input);
+      clock.restore();
+    });
+
+    it('selects the current time ("now"), not midnight', function () {
+      const dp = new Datepicker(input, {pickTime: true, todayButton: true, todayButtonMode: 1});
+      dp.picker.controls.todayButton.click();
+
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 13, 27).getTime()]);
+      expect(dp.picker.controls.hourInput.value, 'to be', '13');
+      expect(dp.picker.controls.minuteInput.value, 'to be', '27');
+    });
+
+    it('snaps the current time to the minute step', function () {
+      const dp = new Datepicker(input, {
+        pickTime: true, todayButton: true, todayButtonMode: 1, minuteStep: 5,
+      });
+      dp.picker.controls.todayButton.click();
+
+      // 13:27 → 13:25
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 13, 25).getTime()]);
+    });
+
+    it('clamps the current time into min/maxDate\'s bounds', function () {
+      const maxDate = new Date(2024, 2, 15, 8, 45);
+      const dp = new Datepicker(input, {
+        pickTime: true, todayButton: true, todayButtonMode: 1, maxDate,
+      });
+      dp.picker.controls.todayButton.click();
+
+      // 13:27 → hour stops at the boundary hour (8); the minute (27) is
+      // within the boundary hour's range and is kept
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 8, 27).getTime()]);
+    });
+
+    it('still selects today\'s midnight when pickTime is off', function () {
+      const dp = new Datepicker(input, {todayButton: true, todayButtonMode: 1});
+      dp.picker.controls.todayButton.click();
+
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15).getTime()]);
+    });
+
+    it('labels the button with locale.now only when it selects the current time', function () {
+      const dp = new Datepicker(input, {pickTime: true, todayButton: true, todayButtonMode: 1});
+      expect(dp.picker.controls.todayButton.textContent, 'to be', 'Now');
+
+      // without pickTime it selects today's midnight — keep "Today"
+      dp.setOptions({pickTime: false});
+      expect(dp.picker.controls.todayButton.textContent, 'to be', 'Today');
+
+      // focus mode just moves to today's date — keep "Today" even with pickTime
+      dp.setOptions({pickTime: true, todayButtonMode: 0});
+      expect(dp.picker.controls.todayButton.textContent, 'to be', 'Today');
+
+      dp.setOptions({todayButtonMode: 1});
+      expect(dp.picker.controls.todayButton.textContent, 'to be', 'Now');
+    });
   });
 });

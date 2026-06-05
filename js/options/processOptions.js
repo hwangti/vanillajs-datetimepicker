@@ -1,6 +1,7 @@
 import {pushUnique} from '../lib/utils.js';
 import {
   dateValue,
+  stripTime,
   regularizeDate,
   getIsoWeek,
   getWesternTradWeek,
@@ -171,6 +172,13 @@ export default function processOptions(options, datepicker) {
   // while min and maxDate for "no limit" in the options are better to be null
   // (especially when updating), the ones in the config have to be undefined
   // because null is treated as 0 (= unix epoch) when comparing with time value
+  // pickTime is processed after this section — resolve its effective value
+  // here because it decides whether min/maxDate keep their time portion.
+  // without pickTime, the time is stripped as in vanillajs-datepicker 1.x so
+  // that e.g. minDate: new Date() keeps today selectable
+  const pickTime = 'pickTime' in inOpts
+    ? !!inOpts.pickTime
+    : !!(datepicker.config || {}).pickTime;
   let minDt = minDate;
   let maxDt = maxDate;
   if ('minDate' in inOpts) {
@@ -179,7 +187,9 @@ export default function processOptions(options, datepicker) {
       ? defaultMinDt  // set 0000-01-01 to prevent negative values for year
       : validateDate(inOpts.minDate, format, locale, minDt);
     if (minDt !== defaultMinDt) {
-      minDt = regularizeDate(minDt, pickLevel, false);
+      minDt = pickTime
+        ? regularizeDate(minDt, pickLevel, false)
+        : stripTime(regularizeDate(minDt, pickLevel, false));
     }
     delete inOpts.minDate;
   }
@@ -188,7 +198,9 @@ export default function processOptions(options, datepicker) {
       ? undefined
       : validateDate(inOpts.maxDate, format, locale, maxDt);
     if (maxDt !== undefined) {
-      maxDt = regularizeDate(maxDt, pickLevel, true);
+      maxDt = pickTime
+        ? regularizeDate(maxDt, pickLevel, true)
+        : stripTime(regularizeDate(maxDt, pickLevel, true));
     }
     delete inOpts.maxDate;
   }

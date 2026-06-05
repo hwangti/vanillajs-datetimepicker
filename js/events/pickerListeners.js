@@ -1,4 +1,4 @@
-import {addMonths, addYears, computeTimeBounds} from '../lib/date.js';
+import {addMonths, addYears, computeTimeBounds, clampTimeToBounds} from '../lib/date.js';
 import {findElementInEventPath} from '../lib/event.js';
 import {goToPrevOrNext, switchView} from './functions.js';
 
@@ -25,22 +25,9 @@ export function onClickNextButton(datepicker) {
   goToPrevOrNext(datepicker, 1);
 }
 
-// Clamp an hour/minute pair into the bounds computed by computeTimeBounds()
-function clampTimeToBounds(h, m, bounds) {
-  if (h <= bounds.hourMin) {
-    h = bounds.hourMin;
-    m = Math.max(m, bounds.minuteMin);
-  }
-  if (h >= bounds.hourMax) {
-    h = bounds.hourMax;
-    m = Math.min(m, bounds.minuteMax);
-  }
-  return [h, m];
-}
-
 // Combine a date timestamp (any time portion) with the picker's current time
 // inputs. Used when pickTime is enabled.
-function applyPickerTime(datepicker, dateValue) {
+export function applyPickerTime(datepicker, dateValue) {
   const {config} = datepicker;
   const {hourInput, minuteInput} = datepicker.picker.controls;
   const d = new Date(dateValue);

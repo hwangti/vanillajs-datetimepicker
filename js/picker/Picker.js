@@ -1,5 +1,5 @@
 import {lastItemOf, isInRange, limitToRange} from '../lib/utils.js';
-import {today, regularizeDate, computeTimeBounds} from '../lib/date.js';
+import {today, stripTime, regularizeDate, computeTimeBounds} from '../lib/date.js';
 import {
   parseHTML,
   getParent,
@@ -60,11 +60,17 @@ function processPickerOptions(picker, options) {
     });
   }
   if (options.locale) {
-    picker.controls.todayButton.textContent = options.locale.today;
     picker.controls.clearButton.textContent = options.locale.clear;
     // the time controls' accessible names follow via aria-labelledby
     picker.controls.hourLabel.textContent = options.locale.hour;
     picker.controls.minuteLabel.textContent = options.locale.minute;
+  }
+  if (options.locale || 'pickTime' in options || 'todayButtonMode' in options) {
+    // when picking time, the today button in select mode picks "now" —
+    // label it accordingly
+    const {locale, pickTime, todayButtonMode} = picker.datepicker.config;
+    picker.controls.todayButton.textContent =
+      pickTime && todayButtonMode === 1 ? locale.now : locale.today;
   }
   if ('todayButton' in options) {
     if (options.todayButton) {
@@ -75,7 +81,12 @@ function processPickerOptions(picker, options) {
   }
   if ('minDate' in options || 'maxDate' in options) {
     const {minDate, maxDate} = picker.datepicker.config;
-    picker.controls.todayButton.disabled = !isInRange(today(), minDate, maxDate);
+    // compare the day, not today's midnight timestamp — minDate may carry a
+    // time portion when pickTime is used (e.g. minDate: new Date()), which
+    // would otherwise disable the button although later times today are
+    // selectable
+    const minDay = minDate === undefined ? undefined : stripTime(minDate);
+    picker.controls.todayButton.disabled = !isInRange(today(), minDay, maxDate);
   }
   if ('clearButton' in options) {
     if (options.clearButton) {

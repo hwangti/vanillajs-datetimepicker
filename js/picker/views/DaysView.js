@@ -1,4 +1,4 @@
-import {today, dateValue, addDays, addWeeks, dayOfTheWeekOf} from '../../lib/date.js';
+import {today, dateValue, stripTime, addDays, addWeeks, dayOfTheWeekOf} from '../../lib/date.js';
 import {formatDate} from '../../lib/date-format.js';
 import {parseHTML, showElement, hideElement} from '../../lib/dom.js';
 import daysTemplate from '../templates/daysTemplate.js';
@@ -28,10 +28,18 @@ export default class DaysView extends View {
     let updateDOW;
 
     if ('minDate' in options) {
-      this.minDate = options.minDate;
+      // cells are compared at day granularity (midnight timestamps) — strip
+      // the time portion min/maxDate may carry when pickTime is used, so the
+      // boundary day itself stays selectable (its in-day limits are enforced
+      // by the time controls)
+      this.minDate = options.minDate === undefined
+        ? undefined
+        : stripTime(options.minDate);
     }
     if ('maxDate' in options) {
-      this.maxDate = options.maxDate;
+      this.maxDate = options.maxDate === undefined
+        ? undefined
+        : stripTime(options.maxDate);
     }
     if (options.checkDisabled) {
       this.checkDisabled = options.checkDisabled;

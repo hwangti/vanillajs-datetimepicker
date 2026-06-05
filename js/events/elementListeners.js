@@ -8,6 +8,7 @@ import {
   goToOrSelectToday,
   unfocus,
 } from './functions.js';
+import {applyPickerTime} from './pickerListeners.js';
 
 // Find the closest date that doesn't meet the condition for unavailable date
 // Returns undefined if no available date is found
@@ -84,7 +85,11 @@ export function onKeydown(datepicker, ev) {
     } else {
       const currentView = picker.currentView;
       if (currentView.isMinView) {
-        datepicker.setDate(picker.viewDate);
+        // combine the focused date with the time controls' value (clamped to
+        // the day's selectable range) — same as clicking the day cell
+        datepicker.setDate(config.pickTime
+          ? applyPickerTime(datepicker, picker.viewDate)
+          : picker.viewDate);
       } else {
         picker.changeView(currentView.id - 1).render();
         cancelEvent();
