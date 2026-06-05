@@ -6,6 +6,7 @@ export type DatepickerLocale = {
     months: string[];
     monthsShort: string[];
     today: string;
+    now?: string;
     clear?: string;
     format: string;
     titleFormat?: string;

@@ -4,8 +4,8 @@ export default class DaysView extends View {
     dow: ChildNode;
     grid: ChildNode;
     setOptions(options: any): void;
-    minDate: any;
-    maxDate: any;
+    minDate: number;
+    maxDate: number;
     checkDisabled: any;
     daysOfWeekDisabled: any;
     daysOfWeekHighlighted: any;

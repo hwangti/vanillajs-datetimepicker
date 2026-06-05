@@ -156,6 +156,19 @@ var dateUtils = (function (exports) {
     return bounds;
   }
 
+  // Clamp an hour/minute pair into the bounds computed by computeTimeBounds()
+  function clampTimeToBounds(hour, minute, bounds) {
+    if (hour <= bounds.hourMin) {
+      hour = bounds.hourMin;
+      minute = Math.max(minute, bounds.minuteMin);
+    }
+    if (hour >= bounds.hourMax) {
+      hour = bounds.hourMax;
+      minute = Math.min(minute, bounds.minuteMax);
+    }
+    return [hour, minute];
+  }
+
   // Convert date to the first/last date of the month/year of the date.
   // keepTime preserves hour/minute/second/ms when true (used by pickTime mode)
   function regularizeDate(date, timeSpan, useLastDate, keepTime = false) {
@@ -182,6 +195,7 @@ var dateUtils = (function (exports) {
   exports.addMonths = addMonths;
   exports.addWeeks = addWeeks;
   exports.addYears = addYears;
+  exports.clampTimeToBounds = clampTimeToBounds;
   exports.computeTimeBounds = computeTimeBounds;
   exports.dateValue = dateValue;
   exports.dayOfTheWeekOf = dayOfTheWeekOf;

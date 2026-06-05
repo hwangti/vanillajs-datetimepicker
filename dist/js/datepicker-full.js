@@ -214,6 +214,19 @@
     return bounds;
   }
 
+  // Clamp an hour/minute pair into the bounds computed by computeTimeBounds()
+  function clampTimeToBounds(hour, minute, bounds) {
+    if (hour <= bounds.hourMin) {
+      hour = bounds.hourMin;
+      minute = Math.max(minute, bounds.minuteMin);
+    }
+    if (hour >= bounds.hourMax) {
+      hour = bounds.hourMax;
+      minute = Math.min(minute, bounds.minuteMax);
+    }
+    return [hour, minute];
+  }
+
   // Convert date to the first/last date of the month/year of the date.
   // keepTime preserves hour/minute/second/ms when true (used by pickTime mode)
   function regularizeDate(date, timeSpan, useLastDate, keepTime = false) {
@@ -580,6 +593,7 @@
       months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
       monthsShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       today: "Today",
+      now: "Now",
       clear: "Clear",
       hour: "Hour",
       minute: "Minute",
@@ -789,6 +803,13 @@
     // while min and maxDate for "no limit" in the options are better to be null
     // (especially when updating), the ones in the config have to be undefined
     // because null is treated as 0 (= unix epoch) when comparing with time value
+    // pickTime is processed after this section — resolve its effective value
+    // here because it decides whether min/maxDate keep their time portion.
+    // without pickTime, the time is stripped as in vanillajs-datepicker 1.x so
+    // that e.g. minDate: new Date() keeps today selectable
+    const pickTime = 'pickTime' in inOpts
+      ? !!inOpts.pickTime
+      : !!(datepicker.config || {}).pickTime;
     let minDt = minDate;
     let maxDt = maxDate;
     if ('minDate' in inOpts) {
@@ -797,7 +818,9 @@
         ? defaultMinDt  // set 0000-01-01 to prevent negative values for year
         : validateDate(inOpts.minDate, format, locale, minDt);
       if (minDt !== defaultMinDt) {
-        minDt = regularizeDate(minDt, pickLevel, false);
+        minDt = pickTime
+          ? regularizeDate(minDt, pickLevel, false)
+          : stripTime(regularizeDate(minDt, pickLevel, false));
       }
       delete inOpts.minDate;
     }
@@ -806,7 +829,9 @@
         ? undefined
         : validateDate(inOpts.maxDate, format, locale, maxDt);
       if (maxDt !== undefined) {
-        maxDt = regularizeDate(maxDt, pickLevel, true);
+        maxDt = pickTime
+          ? regularizeDate(maxDt, pickLevel, true)
+          : stripTime(regularizeDate(maxDt, pickLevel, true));
       }
       delete inOpts.maxDate;
     }
@@ -1245,10 +1270,18 @@
       let updateDOW;
 
       if ('minDate' in options) {
-        this.minDate = options.minDate;
+        // cells are compared at day granularity (midnight timestamps) — strip
+        // the time portion min/maxDate may carry when pickTime is used, so the
+        // boundary day itself stays selectable (its in-day limits are enforced
+        // by the time controls)
+        this.minDate = options.minDate === undefined
+          ? undefined
+          : stripTime(options.minDate);
       }
       if ('maxDate' in options) {
-        this.maxDate = options.maxDate;
+        this.maxDate = options.maxDate === undefined
+          ? undefined
+          : stripTime(options.maxDate);
       }
       if (options.checkDisabled) {
         this.checkDisabled = options.checkDisabled;
@@ -1717,8 +1750,22 @@
   }
 
   function goToOrSelectToday(datepicker) {
-    const currentDate = today();
-    if (datepicker.config.todayButtonMode === 1) {
+    const config = datepicker.config;
+    let currentDate = today();
+    if (config.todayButtonMode === 1) {
+      if (config.pickTime) {
+        // when picking time as well, "today" means "now" — snap the current
+        // time to the minute step and clamp it into min/maxDate's bounds
+        const now = new Date();
+        const step = config.minuteStep || 1;
+        const stepMax = Math.floor(59 / step) * step;
+        let h = now.getHours();
+        let m = Math.min(stepMax, Math.round(now.getMinutes() / step) * step);
+        [h, m] = clampTimeToBounds(
+          h, m, computeTimeBounds(now, config.minDate, config.maxDate, step)
+        );
+        currentDate = now.setHours(h, m, 0, 0);
+      }
       datepicker.setDate(currentDate, {forceRefresh: true, viewDate: currentDate});
     } else {
       datepicker.setFocusedDate(currentDate, true);
@@ -1764,19 +1811,6 @@
 
   function onClickNextButton(datepicker) {
     goToPrevOrNext(datepicker, 1);
-  }
-
-  // Clamp an hour/minute pair into the bounds computed by computeTimeBounds()
-  function clampTimeToBounds(h, m, bounds) {
-    if (h <= bounds.hourMin) {
-      h = bounds.hourMin;
-      m = Math.max(m, bounds.minuteMin);
-    }
-    if (h >= bounds.hourMax) {
-      h = bounds.hourMax;
-      m = Math.min(m, bounds.minuteMax);
-    }
-    return [h, m];
   }
 
   // Combine a date timestamp (any time portion) with the picker's current time
@@ -1877,6 +1911,35 @@
   // sequence number to make the time fields' ids unique across picker instances
   let pickerSeq = 0;
 
+  // show step ticks on a time slider only when it has fewer segments than this
+  // — with too many segments the dots become unreadable noise. 12 covers
+  // minute steps of 5+ and the hour slider when min/maxDate narrows the day's
+  // range, while excluding the dense cases (full 23-hour range, per-minute)
+  const maxTickSegments = 12;
+
+  function setSliderTicks(slider, segments) {
+    // a single segment has no interior tick to draw
+    if (segments > 1 && segments < maxTickSegments) {
+      // one explicitly-positioned dot layer per tick — a repeating gradient
+      // would be rounded to physical pixels per repetition (Chromium), which
+      // piles up and makes the segments visibly unequal. interior ticks only,
+      // centered on the step positions; the dot color is resolved by CSS from
+      // --dp-tick-color (set in the stylesheet from $dp-time-slider-tick-color)
+      const layers = [];
+      for (let i = 1; i < segments; i++) {
+        const at = `calc(${i} * 100% / ${segments})`;
+        layers.push(
+          `radial-gradient(circle at ${at} 50%, var(--dp-tick-color) 0 0.9px, transparent 1.4px)`
+        );
+      }
+      slider.classList.add('with-ticks');
+      slider.style.setProperty('--dp-ticks', layers.join(', '));
+    } else {
+      slider.classList.remove('with-ticks');
+      slider.style.removeProperty('--dp-ticks');
+    }
+  }
+
   function processPickerOptions(picker, options) {
     if ('title' in options) {
       if (options.title) {
@@ -1902,11 +1965,17 @@
       });
     }
     if (options.locale) {
-      picker.controls.todayButton.textContent = options.locale.today;
       picker.controls.clearButton.textContent = options.locale.clear;
       // the time controls' accessible names follow via aria-labelledby
       picker.controls.hourLabel.textContent = options.locale.hour;
       picker.controls.minuteLabel.textContent = options.locale.minute;
+    }
+    if (options.locale || 'pickTime' in options || 'todayButtonMode' in options) {
+      // when picking time, the today button in select mode picks "now" —
+      // label it accordingly
+      const {locale, pickTime, todayButtonMode} = picker.datepicker.config;
+      picker.controls.todayButton.textContent =
+        pickTime && todayButtonMode === 1 ? locale.now : locale.today;
     }
     if ('todayButton' in options) {
       if (options.todayButton) {
@@ -1917,7 +1986,12 @@
     }
     if ('minDate' in options || 'maxDate' in options) {
       const {minDate, maxDate} = picker.datepicker.config;
-      picker.controls.todayButton.disabled = !isInRange(today(), minDate, maxDate);
+      // compare the day, not today's midnight timestamp — minDate may carry a
+      // time portion when pickTime is used (e.g. minDate: new Date()), which
+      // would otherwise disable the button although later times today are
+      // selectable
+      const minDay = minDate === undefined ? undefined : stripTime(minDate);
+      picker.controls.todayButton.disabled = !isInRange(today(), minDay, maxDate);
     }
     if ('clearButton' in options) {
       if (options.clearButton) {
@@ -2027,7 +2101,7 @@
       const minuteInput = timeContainer.querySelector('.datepicker-time-minute');
       const minuteSlider = timeContainer.querySelector('.datepicker-time-minute-slider');
       const minuteLabel = timeContainer.querySelector('.datepicker-time-minute-label');
-      // min/max captions sitting above each slider (.datepicker-time-slider-scale)
+      // min/max captions flanking each slider (.datepicker-time-slider-scale)
       const hourScale = hourSlider.previousElementSibling;
       const minuteScale = minuteSlider.previousElementSibling;
       const [hourScaleMin, hourScaleMax] = hourScale.children;
@@ -2348,6 +2422,9 @@
       controls.hourInput.max = controls.hourSlider.max = bounds.hourMax;
       controls.minuteInput.min = controls.minuteSlider.min = minuteMin;
       controls.minuteInput.max = controls.minuteSlider.max = minuteMax;
+      // visualize the steps when there are few enough of them to read
+      setSliderTicks(controls.hourSlider, bounds.hourMax - bounds.hourMin);
+      setSliderTicks(controls.minuteSlider, Math.round((minuteMax - minuteMin) / step));
       // keep the sliders' min/max captions in sync with the narrowed bounds
       const pad = num => String(num).padStart(2, '0');
       controls.hourScaleMin.textContent = pad(bounds.hourMin);
@@ -2470,7 +2547,11 @@
       } else {
         const currentView = picker.currentView;
         if (currentView.isMinView) {
-          datepicker.setDate(picker.viewDate);
+          // combine the focused date with the time controls' value (clamped to
+          // the day's selectable range) — same as clicking the day cell
+          datepicker.setDate(config.pickTime
+            ? applyPickerTime(datepicker, picker.viewDate)
+            : picker.viewDate);
         } else {
           picker.changeView(currentView.id - 1).render();
           cancelEvent();

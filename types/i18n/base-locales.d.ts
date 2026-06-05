@@ -6,6 +6,7 @@ declare namespace _default {
         let months: string[];
         let monthsShort: string[];
         let today: string;
+        let now: string;
         let clear: string;
         let hour: string;
         let minute: string;
