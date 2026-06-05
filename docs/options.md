@@ -267,7 +267,8 @@ Maximum limit to selectable date. No limit is applied if `null` is set.
 > If [`pickLevel`](#pickLevel) is changed dynamically to higher level independently, this option will be adjusted automatically to the last day of the month or December 31st of the year.  
 > This option should be changed together when changing [`pickLevel`](#pickLevel) to lower level dynamically.
 >
-> When [`pickTime`](#pickTime) is `true`, the time portion of this option is respected as well — e.g. `maxDate: new Date()` prevents picking a time later than the current moment on today. On the boundary day, the picker's hour/minute controls narrow their range accordingly, and times typed past the boundary are clamped to it.
+> When [`pickTime`](#pickTime) is `true`, the time portion of this option is respected as well — e.g. `maxDate: new Date()` prevents picking a time later than the current moment on today. On the boundary day, the picker's hour/minute controls narrow their range accordingly, and times typed past the boundary are clamped to it. (The boundary **day** itself stays selectable in the calendar; only the in-day time range is limited.)  
+> When `pickTime` is `false`, any time portion of this option is ignored (stripped), as in vanillajs-datepicker 1.x.
 
 #### maxNumberOfDates
 - Type: `Number`
@@ -293,13 +294,16 @@ Minimum limit to selectable date. No limit is applied if `null` is set.
 > If [`pickLevel`](#pickLevel) is changed dynamically to higher level independently, this option will be adjusted automatically to the 1st of the month or January 1st of the year.  
 > This option should be changed together when changing [`pickLevel`](#pickLevel) to lower level dynamically.
 >
-> When [`pickTime`](#pickTime) is `true`, the time portion of this option is respected as well — times on the boundary day earlier than the limit cannot be picked. The picker's hour/minute controls narrow their range accordingly. (See also the note on [`maxDate`](#maxDate).)
+> When [`pickTime`](#pickTime) is `true`, the time portion of this option is respected as well — times on the boundary day earlier than the limit cannot be picked. The picker's hour/minute controls narrow their range accordingly, while the boundary **day** itself stays selectable in the calendar. (See also the note on [`maxDate`](#maxDate).)  
+> When `pickTime` is `false`, any time portion of this option is ignored (stripped), as in vanillajs-datepicker 1.x.
 
 #### minuteStep
 - Type: `Number`
 - Default: `1`
 
 Step size (in minutes) for the minute slider/number input. Effective only when [`pickTime`](#pickTime) is `true`. Typical values: `1`, `5`, `10`, `15`, `30`. The slider's max is set automatically so that `step × n ≤ 59` (e.g. `step: 15` ⇒ slider max `45`). When the user types a value that does not fall on a step boundary, it is snapped to the nearest valid step.
+
+> When a slider ends up with fewer than 12 segments (e.g. `step: 10` ⇒ 5 segments), small step dots are shown on its track.
 
 #### nextArrow
 - Type: `String`
@@ -457,7 +461,7 @@ The view displayed when the date picker opens. `0`:_days_ – `3`:_decades_.
 - Type: `Boolean`
 - Default: `true`
 
-Whether to show small min/max captions above the hour/minute sliders. Effective only when [`pickTime`](#pickTime) is `true`.
+Whether to show small min/max captions at both ends of the hour/minute sliders (`00 ─slider─ 23`). Effective only when [`pickTime`](#pickTime) is `true`.
 
 The captions reflect the selectable range of the currently selected day: when the selection is on the same day as [`minDate`](#minDate)/[`maxDate`](#maxDate), the sliders' ranges are narrowed to the selectable time span and the captions update accordingly (e.g. `00`–`09` when `maxDate` falls on 09:43 of that day).
 
@@ -499,6 +503,8 @@ Mode | Name | Description
 --|--|--
 `0` | focus | Move the focused date to the current date without changing the selection  
 `1` | select | Select (or toggle the selection of) the current date
+
+> When [`pickTime`](#pickTime) is `true`, mode `1` selects the current date **and time** ("now"), snapped to [`minuteStep`](#minuteStep) and clamped into [`minDate`](#minDate)/[`maxDate`](#maxDate)'s selectable range. The button is then labeled with the locale's `now` string (`"Now"`) instead of `today`.
 
 #### todayHighlight
 - Type: `Boolean`

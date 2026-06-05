@@ -6,7 +6,7 @@ It can work either standalone or with a CSS framework (e.g. [Bootstrap](https://
 
 ## What's different from vanillajs-datepicker
 
-- **Time picker** — opt-in via `pickTime: true`, with optional `minuteStep`. Renders 24-hour hour/minute controls (number input + range slider, with min/max scale captions toggleable via `timeSliderScale`) below the calendar; selected dates retain their hour and minute. The controls respect the time portion of `minDate`/`maxDate` and appear only on the days view.
+- **Time picker** — opt-in via `pickTime: true`, with optional `minuteStep`. Renders 24-hour hour/minute controls (number input + range slider, with min/max scale captions toggleable via `timeSliderScale` and step dots on coarse-stepped sliders) below the calendar; selected dates retain their hour and minute. The controls respect the time portion of `minDate`/`maxDate` and appear only on the days view, and the today button becomes a "Now" button.
 - **Java/Moment format tokens** — `M`/`MM` are numeric month, `MMM`/`MMMM` are month name, `m`/`mm` are minute, `H`/`HH` are 24-hour hour. **This is a breaking change vs. vanillajs-datepicker / bootstrap-datepicker.** See the [Migration Guide](https://github.com/hwangti/vanillajs-datetimepicker/blob/master/docs/migration-v2.md).
 - **TypeScript types** — `.d.ts` files are generated from JSDoc and shipped in the package; no extra `@types/*` install needed.
 - **Misc fork tweaks** — softened prev/next-month cell opacity (`$dp-cell-prevnext-opacity` Sass var), a couple of timepicker UX fixes, `DateRangePicker.setDates(start, end, options)` third argument forwarded to each datepicker.
