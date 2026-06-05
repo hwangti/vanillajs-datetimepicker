@@ -49,12 +49,13 @@ $dp-footer-background-color: $light !default;
 
 $dp-time-slider-track-color: $grey-lighter !default;
 $dp-time-slider-track-height: 4px !default;
-$dp-time-slider-track-radius: $dp-border-radius-small !default;
 $dp-time-slider-thumb-color: $link !default;
 $dp-time-slider-thumb-size: 14px !default;
 $dp-time-slider-thumb-radius: $dp-border-radius-small !default;
 $dp-time-slider-scale-color: $grey-light !default;
 $dp-time-slider-scale-font-size: 0.625em !default;
+$dp-time-slider-tick-color: rgba(0, 0, 0, 0.12) !default;
+$dp-time-input-width: 2.25em !default;
 
 $dp-input-in-edit-border-color: color.scale($link, $lightness: -5%) !default;
 $dp-input-in-edit-focus-box-shadow-size: 0 0 0.25em 0.25em !default;
@@ -129,30 +130,30 @@ $dp-one-seventh: math.percentage(math.div(1, 7));
 }
 
 .datepicker-time {
-  padding: 4px 8px 2px;
+  padding: 6px 8px 4px;
   font-size: 1rem;
+  // label / number input / slider columns shared by the hour and minute rows
+  // (rows are display:contents) — the label column sizes itself to the widest
+  // caption, so labels of any locale fit without clipping
+  display: grid;
+  grid-template-columns: max-content max-content minmax(80px, 1fr);
+  align-items: center;
+  gap: 4px 8px;
 
   .datepicker-time-row {
-    display: flex;
-    align-items: center;
-    margin: 2px 0;
-
-    & + .datepicker-time-row {
-      margin-top: 4px;
-    }
+    display: contents;
   }
 
   .datepicker-time-label {
-    flex: 0 0 auto;
-    width: 1.5em;
     text-align: right;
-    margin-right: 6px;
+    white-space: nowrap;
     font-size: 0.85em;
     color: #666;
   }
 
   input[type="number"] {
-    width: 3em;
+    box-sizing: border-box;
+    width: $dp-time-input-width;
     padding: 2px 4px;
     text-align: center;
     border: 1px solid #ccc;
@@ -173,23 +174,49 @@ $dp-one-seventh: math.percentage(math.div(1, 7));
   }
 
   .datepicker-time-slider-wrap {
-    flex: 1 1 auto;
-    min-width: 80px;
-    margin-left: 8px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25em;
   }
 
+  // the min/max captions flank the slider (min — slider — max). the scale
+  // container is dissolved with display:contents so the spans become flex
+  // items of the wrap; inheritable properties still pass through to them
   .datepicker-time-slider-scale {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1px;
+    display: contents;
     font-size: $dp-time-slider-scale-font-size;
     line-height: 1;
+    letter-spacing: -0.05em;
     color: $dp-time-slider-scale-color;
   }
 
+  // give the captions a constant box so the sliders of both rows stay
+  // aligned even when narrow digits show up (e.g. "11" is narrower than
+  // "00" in proportional fonts)
+  .datepicker-time-slider-scale-min,
+  .datepicker-time-slider-scale-max {
+    min-width: 2ch;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .datepicker-time-slider-scale-min {
+    text-align: right;
+  }
+
+  // DOM order is min, max, slider — push the max caption after the slider
+  .datepicker-time-slider-scale-max {
+    order: 1;
+    text-align: left;
+  }
+
   input[type="range"] {
-    display: block;
-    width: 100%;
+    flex: 1 1 auto;
+    box-sizing: border-box;
+    min-width: 0;
+    // reset the UA default margin (e.g. 2px in Chrome) so the slider fills
+    // its flex cell exactly between the min/max scale captions
+    margin: 0;
     -webkit-appearance: none;
     appearance: none;
     height: $dp-time-slider-thumb-size;
@@ -201,17 +228,46 @@ $dp-one-seventh: math.percentage(math.div(1, 7));
       outline: none;
     }
 
+    // the track is painted only across the thumb's travel range (inset by
+    // half a thumb on each side) so its visible ends coincide with the
+    // thumb's extreme center positions. step ticks can then divide it into
+    // visually equal segments that still match the actual thumb stops.
+    // the thumb overhangs the painted ends by half its width at the extremes
     &::-webkit-slider-runnable-track {
       height: $dp-time-slider-track-height;
-      background: $dp-time-slider-track-color;
-      border-radius: $dp-time-slider-track-radius;
+      background-image:
+        linear-gradient($dp-time-slider-track-color 0 100%);
+      background-size: calc(100% - #{$dp-time-slider-thumb-size}) 100%;
+      background-position: #{math.div($dp-time-slider-thumb-size, 2)} 0;
+      background-repeat: no-repeat;
       cursor: pointer;
     }
     &::-moz-range-track {
       height: $dp-time-slider-track-height;
-      background: $dp-time-slider-track-color;
-      border-radius: $dp-time-slider-track-radius;
+      background-image:
+        linear-gradient($dp-time-slider-track-color 0 100%);
+      background-size: calc(100% - #{$dp-time-slider-thumb-size}) 100%;
+      background-position: #{math.div($dp-time-slider-thumb-size, 2)} 0;
+      background-repeat: no-repeat;
       cursor: pointer;
+    }
+
+    // step ticks — Picker.syncTimeInputs() adds .with-ticks and builds the
+    // dot layers into --dp-ticks (one radial-gradient per interior tick;
+    // the painted track's ends act as the outer boundaries). the layers are
+    // sized/positioned to the thumb's travel range by the shared
+    // background-size/-position above, so the dots sit on the thumb stops
+    --dp-tick-color: #{$dp-time-slider-tick-color};
+
+    &.with-ticks::-webkit-slider-runnable-track {
+      background-image:
+        var(--dp-ticks),
+        linear-gradient($dp-time-slider-track-color 0 100%);
+    }
+    &.with-ticks::-moz-range-track {
+      background-image:
+        var(--dp-ticks),
+        linear-gradient($dp-time-slider-track-color 0 100%);
     }
 
     &::-webkit-slider-thumb {

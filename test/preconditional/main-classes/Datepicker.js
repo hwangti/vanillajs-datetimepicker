@@ -809,6 +809,39 @@ describe('Datepicker', function () {
       expect(minuteScale.style.display, 'to be', '');
     });
 
+    it('shows slider step ticks only when there are fewer than 12 segments', function () {
+      const dp = new Datepicker(input, {pickTime: true, minuteStep: 15});
+      const {hourSlider, minuteSlider} = dp.picker.controls;
+      dp.setDate(new Date(2024, 2, 14, 8, 0));
+
+      // hour slider: 23 segments → too dense, no ticks
+      expect(hourSlider.classList.contains('with-ticks'), 'to be', false);
+      expect(hourSlider.style.getPropertyValue('--dp-ticks'), 'to be', '');
+      // minute slider: 45 / 15 = 3 segments → 2 interior tick dots
+      expect(minuteSlider.classList.contains('with-ticks'), 'to be', true);
+      expect(
+        minuteSlider.style.getPropertyValue('--dp-ticks').match(/radial-gradient/g).length,
+        'to be', 2
+      );
+      expect(minuteSlider.style.getPropertyValue('--dp-ticks'), 'to contain', '100% / 3');
+
+      // minuteStep 5 → 55 / 5 = 11 segments → still within the limit
+      dp.setOptions({minuteStep: 5});
+      expect(minuteSlider.classList.contains('with-ticks'), 'to be', true);
+      expect(
+        minuteSlider.style.getPropertyValue('--dp-ticks').match(/radial-gradient/g).length,
+        'to be', 10
+      );
+
+      // narrowed bounds turn the hour ticks on: maxDate day 0-8 → 8 segments
+      dp.setOptions({maxDate: new Date(2024, 2, 14, 8, 45)});
+      expect(hourSlider.classList.contains('with-ticks'), 'to be', true);
+      expect(
+        hourSlider.style.getPropertyValue('--dp-ticks').match(/radial-gradient/g).length,
+        'to be', 7
+      );
+    });
+
     it('shows the sliders\' min/max as zero-padded scale captions', function () {
       const maxDate = new Date(2024, 2, 15, 8, 45);
       const dp = new Datepicker(input, {pickTime: true, maxDate});

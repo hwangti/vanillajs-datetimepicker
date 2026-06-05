@@ -35,6 +35,35 @@ const toPx = num => num ? `${num}px` : num;
 // sequence number to make the time fields' ids unique across picker instances
 let pickerSeq = 0;
 
+// show step ticks on a time slider only when it has fewer segments than this
+// — with too many segments the dots become unreadable noise. 12 covers
+// minute steps of 5+ and the hour slider when min/maxDate narrows the day's
+// range, while excluding the dense cases (full 23-hour range, per-minute)
+const maxTickSegments = 12;
+
+function setSliderTicks(slider, segments) {
+  // a single segment has no interior tick to draw
+  if (segments > 1 && segments < maxTickSegments) {
+    // one explicitly-positioned dot layer per tick — a repeating gradient
+    // would be rounded to physical pixels per repetition (Chromium), which
+    // piles up and makes the segments visibly unequal. interior ticks only,
+    // centered on the step positions; the dot color is resolved by CSS from
+    // --dp-tick-color (set in the stylesheet from $dp-time-slider-tick-color)
+    const layers = [];
+    for (let i = 1; i < segments; i++) {
+      const at = `calc(${i} * 100% / ${segments})`;
+      layers.push(
+        `radial-gradient(circle at ${at} 50%, var(--dp-tick-color) 0 0.9px, transparent 1.4px)`
+      );
+    }
+    slider.classList.add('with-ticks');
+    slider.style.setProperty('--dp-ticks', layers.join(', '));
+  } else {
+    slider.classList.remove('with-ticks');
+    slider.style.removeProperty('--dp-ticks');
+  }
+}
+
 function processPickerOptions(picker, options) {
   if ('title' in options) {
     if (options.title) {
@@ -196,7 +225,7 @@ export default class Picker {
     const minuteInput = timeContainer.querySelector('.datepicker-time-minute');
     const minuteSlider = timeContainer.querySelector('.datepicker-time-minute-slider');
     const minuteLabel = timeContainer.querySelector('.datepicker-time-minute-label');
-    // min/max captions sitting above each slider (.datepicker-time-slider-scale)
+    // min/max captions flanking each slider (.datepicker-time-slider-scale)
     const hourScale = hourSlider.previousElementSibling;
     const minuteScale = minuteSlider.previousElementSibling;
     const [hourScaleMin, hourScaleMax] = hourScale.children;
@@ -517,6 +546,9 @@ export default class Picker {
     controls.hourInput.max = controls.hourSlider.max = bounds.hourMax;
     controls.minuteInput.min = controls.minuteSlider.min = minuteMin;
     controls.minuteInput.max = controls.minuteSlider.max = minuteMax;
+    // visualize the steps when there are few enough of them to read
+    setSliderTicks(controls.hourSlider, bounds.hourMax - bounds.hourMin);
+    setSliderTicks(controls.minuteSlider, Math.round((minuteMax - minuteMin) / step));
     // keep the sliders' min/max captions in sync with the narrowed bounds
     const pad = num => String(num).padStart(2, '0');
     controls.hourScaleMin.textContent = pad(bounds.hourMin);
