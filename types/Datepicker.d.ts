@@ -89,6 +89,7 @@ export default class Datepicker {
         };
         pickTime: boolean;
         minuteStep: number;
+        timeSliderScale: boolean;
         todayButtonMode: any;
     };
     inputField: HTMLElement;

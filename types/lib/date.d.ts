@@ -10,4 +10,10 @@ export function getIsoWeek(date: any): number;
 export function getWesternTradWeek(date: any): number;
 export function getMidEasternWeek(date: any): number;
 export function startOfYearPeriod(date: any, years: any): number;
+export function computeTimeBounds(date: any, minDate: any, maxDate: any, step?: number): {
+    hourMin: number;
+    minuteMin: number;
+    hourMax: number;
+    minuteMax: number;
+};
 export function regularizeDate(date: any, timeSpan: any, useLastDate: any, keepTime?: boolean): any;

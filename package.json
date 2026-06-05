@@ -1,6 +1,6 @@
 {
   "name": "@hwangti/vanillajs-datetimepicker",
-  "version": "2.0.0-beta.0",
+  "version": "2.0.0-beta.1",
   "description": "Fork of vanillajs-datepicker that adds a 24-hour time picker (pickTime, minuteStep), switches format tokens to the Java/Moment convention, and ships TypeScript types.",
   "type": "module",
   "module": "js/main.js",

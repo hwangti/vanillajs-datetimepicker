@@ -14,9 +14,15 @@ export default class Picker {
         hourInput: any;
         hourSlider: any;
         hourLabel: any;
+        hourScale: any;
+        hourScaleMin: any;
+        hourScaleMax: any;
         minuteInput: any;
         minuteSlider: any;
         minuteLabel: any;
+        minuteScale: any;
+        minuteScaleMin: any;
+        minuteScaleMax: any;
     };
     viewDate: any;
     views: (DaysView | MonthsView | YearsView)[];
