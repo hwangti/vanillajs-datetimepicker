@@ -50,6 +50,8 @@ Date range picker is essentially a wrapper/controller of 2 date pickers. It's th
 8. **Clear button**:  
    Button to clear the selection
 
+> When [`pickTime`](options#pickTime) is enabled, a **time controls** block (hour/minute number inputs + range sliders) is shown between the view and the footer buttons. It appears only on the view where dates are actually picked (the days view by default) and is hidden while navigating the months/years/decades views.
+
 ##### Days view
 
 The view to select a date. The days are displayed in monthly calendar layout. Optionally, ISO week numbers can be shown in the view.

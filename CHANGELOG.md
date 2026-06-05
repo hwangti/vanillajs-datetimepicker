@@ -12,6 +12,7 @@ This is the first release of the **vanillajs-datetimepicker** fork. The package 
 
 - **Time picker** — opt in with `pickTime: true` (default `false`). Renders 24-hour hour/minute controls (number input + range slider, kept in sync) below the calendar. Selected dates retain their hour and minute instead of being normalized to `00:00:00`.
 - **`minuteStep` option** (default `1`) — step size for the minute slider/number input. Typed values that fall between steps are snapped to the nearest valid step.
+- **`timeSliderScale` option** (default `true`) — shows small min/max captions above the hour/minute sliders. The captions track the selectable range of the selected day, narrowing together with the slider bounds near `minDate`/`maxDate`. Set `false` to hide them.
 - **Hour/minute format tokens** — `H`/`HH` (24-hour) and `m`/`mm` (minute) for use with `pickTime`.
 - **`hour` / `minute` locale fields** — `base-locales.js` provides `"Hour"` / `"Minute"`; the `ko` locale ships with `시` / `분`. Other locales fall back to English until contributed.
 - **`DateRangePicker.setDates(start, end, options)`** — third argument is forwarded to each `datepicker.setDate()` call (e.g. `{render: false}`, `{viewDate: ...}`).
@@ -19,6 +20,9 @@ This is the first release of the **vanillajs-datetimepicker** fork. The package 
 
 ### Tweaks
 
+- Time controls are shown only on the view where dates are actually picked (the days view by default) and are hidden while navigating the months/years/decades views.
+- Time controls now respect `minDate`/`maxDate`: the hour/minute inputs' and sliders' `min`/`max` attributes are narrowed to the selectable range of the selected day, so wheel/spinner/slider edits stop right at the boundary instead of being silently rejected. Directly-typed values are clamped into the range, clicking a day cell clamps the carried-over time into that day's range, and the controls always re-sync to the actual selection — which also fixes the hour input losing its zero-padding (`09` → `9`) when an edit used to be rejected.
+- Time picker fields are now identifiable and named for browsers/assistive tech: the hour/minute number inputs get per-instance `id`s, and all four time controls (number inputs + sliders) are linked to the visible hour/minute captions via `aria-labelledby` (real `<label for>`s could end up nested inside the bound input's `<label>`, which is invalid HTML). Clears Chrome DevTools' "A form field element should have an id or name attribute" notices, and the controls' accessible names follow locale changes automatically.
 - New Sass variable `$dp-cell-prevnext-opacity` softens the appearance of previous/next-month cells in the day grid.
 - `DateRangePicker` no longer counts `<input>` elements inside the picker popup when discovering its bound inputs (`closest('.datepicker')` filter).
 - `DaysView` initialization is guarded against the `DateRangePicker` `dates` getter not being defined yet (prevents a crash on first construction).

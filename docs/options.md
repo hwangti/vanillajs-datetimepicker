@@ -266,6 +266,8 @@ Maximum limit to selectable date. No limit is applied if `null` is set.
 > Given date is processed to match the [`pickLevel`](#pickLevel) at the time.  
 > If [`pickLevel`](#pickLevel) is changed dynamically to higher level independently, this option will be adjusted automatically to the last day of the month or December 31st of the year.  
 > This option should be changed together when changing [`pickLevel`](#pickLevel) to lower level dynamically.
+>
+> When [`pickTime`](#pickTime) is `true`, the time portion of this option is respected as well — e.g. `maxDate: new Date()` prevents picking a time later than the current moment on today. On the boundary day, the picker's hour/minute controls narrow their range accordingly, and times typed past the boundary are clamped to it.
 
 #### maxNumberOfDates
 - Type: `Number`
@@ -290,6 +292,8 @@ Minimum limit to selectable date. No limit is applied if `null` is set.
 > Given date is processed to match the [`pickLevel`](#pickLevel) at the time.  
 > If [`pickLevel`](#pickLevel) is changed dynamically to higher level independently, this option will be adjusted automatically to the 1st of the month or January 1st of the year.  
 > This option should be changed together when changing [`pickLevel`](#pickLevel) to lower level dynamically.
+>
+> When [`pickTime`](#pickTime) is `true`, the time portion of this option is respected as well — times on the boundary day earlier than the limit cannot be picked. The picker's hour/minute controls narrow their range accordingly. (See also the note on [`maxDate`](#maxDate).)
 
 #### minuteStep
 - Type: `Number`
@@ -345,6 +349,10 @@ new Datepicker(input, {
 > Currently 24-hour only. Seconds, AM/PM, and 12-hour tokens (`s`/`ss`, `a`, `h`/`hh`) are planned for a later release.
 >
 > When `false` (default), the picker behaves the same as in vanillajs-datepicker 1.x — stored values have time stripped to `00:00:00`.
+>
+> The time controls appear only on the view where dates are actually picked (the days view by default) and are hidden while navigating the months/years/decades views.  
+> The time portion of [`minDate`](#minDate)/[`maxDate`](#maxDate) is respected — see the notes on those options.  
+> Small min/max captions above the sliders can be toggled with [`timeSliderScale`](#timeSliderScale).
 
 #### prevArrow
 - Type: `String`
@@ -444,6 +452,22 @@ Whether to show the date picker automatically when the associated input filed re
 - Default: `0`
 
 The view displayed when the date picker opens. `0`:_days_ – `3`:_decades_.
+
+#### timeSliderScale
+- Type: `Boolean`
+- Default: `true`
+
+Whether to show small min/max captions above the hour/minute sliders. Effective only when [`pickTime`](#pickTime) is `true`.
+
+The captions reflect the selectable range of the currently selected day: when the selection is on the same day as [`minDate`](#minDate)/[`maxDate`](#maxDate), the sliders' ranges are narrowed to the selectable time span and the captions update accordingly (e.g. `00`–`09` when `maxDate` falls on 09:43 of that day).
+
+```js
+new Datepicker(input, {
+  pickTime: true,
+  timeSliderScale: false,  // hide the captions
+  format: 'yyyy-MM-dd HH:mm'
+});
+```
 
 #### title
 - Type: `String`
