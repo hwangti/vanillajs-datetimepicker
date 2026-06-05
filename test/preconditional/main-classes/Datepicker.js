@@ -753,6 +753,18 @@ describe('Datepicker', function () {
       expect(minuteInput.max, 'to be', '59');
     });
 
+    it('links the hour/minute captions to the controls via aria-labelledby', function () {
+      const dp = new Datepicker(input, {pickTime: true});
+      const {hourInput, hourSlider, hourLabel, minuteInput, minuteSlider, minuteLabel}
+        = dp.picker.controls;
+      expect(hourLabel.id, 'to match', /^datepicker-time-hour-label-\d+$/);
+      expect(minuteLabel.id, 'to match', /^datepicker-time-minute-label-\d+$/);
+      expect(hourInput.getAttribute('aria-labelledby'), 'to be', hourLabel.id);
+      expect(hourSlider.getAttribute('aria-labelledby'), 'to be', hourLabel.id);
+      expect(minuteInput.getAttribute('aria-labelledby'), 'to be', minuteLabel.id);
+      expect(minuteSlider.getAttribute('aria-labelledby'), 'to be', minuteLabel.id);
+    });
+
     it('shows the slider scales by default and toggles them with timeSliderScale', function () {
       const dp = new Datepicker(input, {pickTime: true});
       const {hourScale, minuteScale} = dp.picker.controls;

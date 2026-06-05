@@ -32,6 +32,9 @@ const orientClasses = ['left', 'top', 'right', 'bottom'].reduce((obj, key) => {
 }, {});
 const toPx = num => num ? `${num}px` : num;
 
+// sequence number to make the time fields' ids unique across picker instances
+let pickerSeq = 0;
+
 function processPickerOptions(picker, options) {
   if ('title' in options) {
     if (options.title) {
@@ -59,6 +62,7 @@ function processPickerOptions(picker, options) {
   if (options.locale) {
     picker.controls.todayButton.textContent = options.locale.today;
     picker.controls.clearButton.textContent = options.locale.clear;
+    // the time controls' accessible names follow via aria-labelledby
     picker.controls.hourLabel.textContent = options.locale.hour;
     picker.controls.minuteLabel.textContent = options.locale.minute;
   }
@@ -187,6 +191,24 @@ export default class Picker {
     const [hourScaleMin, hourScaleMax] = hourScale.children;
     const [minuteScaleMin, minuteScaleMax] = minuteScale.children;
     const [todayButton, clearButton] = footer.querySelector('.datepicker-controls').children;
+
+    // the time fields come from a shared template — give them per-instance ids
+    // so browsers can identify the fields
+    const seq = pickerSeq++;
+    hourInput.id = `datepicker-time-hour-${seq}`;
+    minuteInput.id = `datepicker-time-minute-${seq}`;
+    // link the hour/minute captions to their controls with aria-labelledby.
+    // real <label for>s would risk being nested inside the bound input's
+    // <label> (the picker is mounted next to the input), which is invalid
+    // HTML — aria-labelledby gives the same association regardless of where
+    // the picker is mounted, and tracks the captions' locale changes
+    hourLabel.id = `datepicker-time-hour-label-${seq}`;
+    minuteLabel.id = `datepicker-time-minute-label-${seq}`;
+    hourInput.setAttribute('aria-labelledby', hourLabel.id);
+    hourSlider.setAttribute('aria-labelledby', hourLabel.id);
+    minuteInput.setAttribute('aria-labelledby', minuteLabel.id);
+    minuteSlider.setAttribute('aria-labelledby', minuteLabel.id);
+
     const controls = {
       title,
       prevButton,
