@@ -348,6 +348,10 @@ export default function processOptions(options, datepicker) {
     }
     delete inOpts.minuteStep;
   }
+  if ('timeSliderScale' in inOpts) {
+    config.timeSliderScale = !!inOpts.timeSliderScale;
+    delete inOpts.timeSliderScale;
+  }
   if ('todayButtonMode' in inOpts) {
     switch(inOpts.todayButtonMode) {
       case 0:

@@ -53,6 +53,8 @@ $dp-time-slider-track-radius: $dp-border-radius-small !default;
 $dp-time-slider-thumb-color: $link !default;
 $dp-time-slider-thumb-size: 14px !default;
 $dp-time-slider-thumb-radius: $dp-border-radius-small !default;
+$dp-time-slider-scale-color: $grey-light !default;
+$dp-time-slider-scale-font-size: 0.625em !default;
 
 $dp-input-in-edit-border-color: color.scale($link, $lightness: -5%) !default;
 $dp-input-in-edit-focus-box-shadow-size: 0 0 0.25em 0.25em !default;
@@ -170,10 +172,24 @@ $dp-one-seventh: math.percentage(math.div(1, 7));
     }
   }
 
-  input[type="range"] {
+  .datepicker-time-slider-wrap {
     flex: 1 1 auto;
     min-width: 80px;
     margin-left: 8px;
+  }
+
+  .datepicker-time-slider-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1px;
+    font-size: $dp-time-slider-scale-font-size;
+    line-height: 1;
+    color: $dp-time-slider-scale-color;
+  }
+
+  input[type="range"] {
+    display: block;
+    width: 100%;
     -webkit-appearance: none;
     appearance: none;
     height: $dp-time-slider-thumb-size;

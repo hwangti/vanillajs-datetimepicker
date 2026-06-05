@@ -98,6 +98,16 @@ function processPickerOptions(picker, options) {
       minuteSlider.max = Math.floor(59 / step) * step;
     }
   }
+  if ('timeSliderScale' in options) {
+    const {hourScale, minuteScale} = picker.controls;
+    if (picker.datepicker.config.timeSliderScale) {
+      showElement(hourScale);
+      showElement(minuteScale);
+    } else {
+      hideElement(hourScale);
+      hideElement(minuteScale);
+    }
+  }
 }
 
 // Compute view date to reset, which will be...
@@ -171,6 +181,11 @@ export default class Picker {
     const minuteInput = timeContainer.querySelector('.datepicker-time-minute');
     const minuteSlider = timeContainer.querySelector('.datepicker-time-minute-slider');
     const minuteLabel = timeContainer.querySelector('.datepicker-time-minute-label');
+    // min/max captions sitting above each slider (.datepicker-time-slider-scale)
+    const hourScale = hourSlider.previousElementSibling;
+    const minuteScale = minuteSlider.previousElementSibling;
+    const [hourScaleMin, hourScaleMax] = hourScale.children;
+    const [minuteScaleMin, minuteScaleMax] = minuteScale.children;
     const [todayButton, clearButton] = footer.querySelector('.datepicker-controls').children;
     const controls = {
       title,
@@ -183,9 +198,15 @@ export default class Picker {
       hourInput,
       hourSlider,
       hourLabel,
+      hourScale,
+      hourScaleMin,
+      hourScaleMax,
       minuteInput,
       minuteSlider,
       minuteLabel,
+      minuteScale,
+      minuteScaleMin,
+      minuteScaleMax,
     };
     this.main = main;
     this.controls = controls;
@@ -463,7 +484,12 @@ export default class Picker {
     controls.hourInput.max = controls.hourSlider.max = bounds.hourMax;
     controls.minuteInput.min = controls.minuteSlider.min = minuteMin;
     controls.minuteInput.max = controls.minuteSlider.max = minuteMax;
+    // keep the sliders' min/max captions in sync with the narrowed bounds
     const pad = num => String(num).padStart(2, '0');
+    controls.hourScaleMin.textContent = pad(bounds.hourMin);
+    controls.hourScaleMax.textContent = pad(bounds.hourMax);
+    controls.minuteScaleMin.textContent = pad(minuteMin);
+    controls.minuteScaleMax.textContent = pad(minuteMax);
     controls.hourInput.value = pad(h);
     controls.hourSlider.value = h;
     controls.minuteInput.value = pad(m);

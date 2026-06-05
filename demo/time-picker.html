@@ -43,7 +43,7 @@
     </div>
 
     <div class="row">
-      <label for="dt3">pickTime: true, minuteStep: 15 (15-minute steps)</label>
+      <label for="dt3">pickTime: true, minuteStep: 15, timeSliderScale: false (captions hidden)</label>
       <input id="dt3" class="dp" type="text" placeholder="yyyy-MM-dd HH:mm">
       <div class="out" id="out3"></div>
     </div>
@@ -63,6 +63,7 @@
   format: 'yyyy-MM-dd HH:mm',
   pickTime: true,
   minuteStep: 15,         // 1, 5, 10, 15, 30, ...
+  timeSliderScale: false, // hide the min/max captions above the sliders (default: true)
   todayButton: true,
   todayButtonMode: 1,     // 0 = focus only, 1 = select today immediately
   clearButton: true,
@@ -99,6 +100,7 @@
         format: 'yyyy-MM-dd HH:mm',
         pickTime: true,
         minuteStep: 15,
+        timeSliderScale: false,
       }, common), 'out3');
 
       const rangeWrap = document.getElementById('rangeWrap');

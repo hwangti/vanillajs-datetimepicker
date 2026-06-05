@@ -72,6 +72,7 @@
  * @property {boolean} [showOnClick]
  * @property {boolean} [showOnFocus]
  * @property {number} [startView]
+ * @property {boolean} [timeSliderScale]
  * @property {string} [title]
  * @property {number} [todayButtonMode]
  * @property {boolean} [todayButton]

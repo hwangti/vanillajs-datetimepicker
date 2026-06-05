@@ -22,12 +22,24 @@ export default optimizeTemplateHTML(`<div class="datepicker">
         <div class="datepicker-time-row">
           <span class="datepicker-time-label datepicker-time-hour-label"></span>
           <input type="number" class="datepicker-time-hour" min="0" max="23" step="1" tabindex="-1">
-          <input type="range" class="datepicker-time-hour-slider" min="0" max="23" step="1" tabindex="-1">
+          <div class="datepicker-time-slider-wrap">
+            <div class="datepicker-time-slider-scale" aria-hidden="true">
+              <span class="datepicker-time-slider-scale-min"></span>
+              <span class="datepicker-time-slider-scale-max"></span>
+            </div>
+            <input type="range" class="datepicker-time-hour-slider" min="0" max="23" step="1" tabindex="-1">
+          </div>
         </div>
         <div class="datepicker-time-row">
           <span class="datepicker-time-label datepicker-time-minute-label"></span>
           <input type="number" class="datepicker-time-minute" min="0" max="59" step="1" tabindex="-1">
-          <input type="range" class="datepicker-time-minute-slider" min="0" max="59" step="1" tabindex="-1">
+          <div class="datepicker-time-slider-wrap">
+            <div class="datepicker-time-slider-scale" aria-hidden="true">
+              <span class="datepicker-time-slider-scale-min"></span>
+              <span class="datepicker-time-slider-scale-max"></span>
+            </div>
+            <input type="range" class="datepicker-time-minute-slider" min="0" max="59" step="1" tabindex="-1">
+          </div>
         </div>
       </div>
       <div class="datepicker-controls">

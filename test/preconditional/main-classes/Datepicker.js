@@ -753,6 +753,39 @@ describe('Datepicker', function () {
       expect(minuteInput.max, 'to be', '59');
     });
 
+    it('shows the slider scales by default and toggles them with timeSliderScale', function () {
+      const dp = new Datepicker(input, {pickTime: true});
+      const {hourScale, minuteScale} = dp.picker.controls;
+      expect(hourScale.style.display, 'to be', '');
+      expect(minuteScale.style.display, 'to be', '');
+
+      dp.setOptions({timeSliderScale: false});
+      expect(hourScale.style.display, 'to be', 'none');
+      expect(minuteScale.style.display, 'to be', 'none');
+
+      dp.setOptions({timeSliderScale: true});
+      expect(hourScale.style.display, 'to be', '');
+      expect(minuteScale.style.display, 'to be', '');
+    });
+
+    it('shows the sliders\' min/max as zero-padded scale captions', function () {
+      const maxDate = new Date(2024, 2, 15, 8, 45);
+      const dp = new Datepicker(input, {pickTime: true, maxDate});
+      const {hourScaleMin, hourScaleMax, minuteScaleMin, minuteScaleMax} = dp.picker.controls;
+
+      // on another day, the scales show the full ranges
+      dp.setDate(new Date(2024, 2, 14, 8, 0));
+      expect(hourScaleMin.textContent, 'to be', '00');
+      expect(hourScaleMax.textContent, 'to be', '23');
+      expect(minuteScaleMin.textContent, 'to be', '00');
+      expect(minuteScaleMax.textContent, 'to be', '59');
+
+      // at the boundary hour of the maxDate day, the scales narrow with the bounds
+      dp.setDate(new Date(2024, 2, 15, 8, 0));
+      expect(hourScaleMax.textContent, 'to be', '08');
+      expect(minuteScaleMax.textContent, 'to be', '45');
+    });
+
     it('stops a time typed past maxDate at the boundary and keeps controls in sync', function () {
       const maxDate = new Date(2024, 2, 15, 8, 45);
       const dp = new Datepicker(input, {pickTime: true, maxDate});
