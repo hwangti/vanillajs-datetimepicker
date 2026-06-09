@@ -254,6 +254,11 @@
   const reFormatTokens = /MMMM|MMM|MM|M|dd?|DD?|yyyy|yy?|HH?|mm?/;
   // pattern for non date parts
   const reNonDateParts = /[\s!-/:-@[-`{-~年月日時分]+/;
+  // ISO 8601 date/time delimiter: a 'T' sitting between two digits (e.g. 2024-03-15T09:30).
+  // Normalized to a space before splitting so the 'T' isn't swallowed into a date number.
+  // (Not added to reNonDateParts, because a bare 'T' separator would also break textual
+  //  day/month names that start with 'T', e.g. parsing "Thursday, ...".)
+  const reIsoTimeSeparator = /(\d)T(\d)/;
   // cache for persed formats
   let knownFormats = {};
   // parse functions for date parts
@@ -390,7 +395,7 @@
 
     return knownFormats[format] = {
       parser(dateStr, locale) {
-        const dateParts = dateStr.split(reNonDateParts).reduce((dtParts, part, index) => {
+        const dateParts = dateStr.replace(reIsoTimeSeparator, '$1 $2').split(reNonDateParts).reduce((dtParts, part, index) => {
           if (part.length > 0 && parts[index]) {
             const token = parts[index][0];
             if (token !== 'D') {
