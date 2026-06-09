@@ -201,6 +201,21 @@ describe('lib/date', function () {
       expect(parseDate('2024-03-15 09:00', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 9, 0).getTime());
     });
 
+    it('treats the ISO 8601 "T" as a date/time delimiter', function () {
+      // server-supplied LocalDateTime strings can be passed directly, w/o pre-converting
+      // the "T" to a space. seconds (38) have no token in the format and are dropped.
+      expect(parseDate('2026-06-18T23:35:38', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2026, 5, 18, 23, 35).getTime());
+      expect(parseDate('2024-03-15T09:30', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 9, 30).getTime());
+      expect(parseDate('2024-03-15T00:00', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2024, 2, 15, 0, 0).getTime());
+      // a space-delimited string keeps working identically
+      expect(parseDate('2026-06-18 23:35', 'yyyy-MM-dd HH:mm'), 'to be', new Date(2026, 5, 18, 23, 35).getTime());
+    });
+
+    it('does not split a "T" that is part of a textual day/month name', function () {
+      // only a 'T' between digits is the ISO delimiter; "Thursday" must stay intact
+      expect(parseDate('Thursday, Dec 15, 2012', 'DD, MMM dd, yyyy', locales.en), 'to be', new Date(2012, 11, 15).getTime());
+    });
+
     it('ignores invalid hour/minute parts and keeps the rest', function () {
       // non-numeric → setHours/setMinutes returns NaN → reducer skips that step,
       // so only the unparsable part is dropped, year/month/day still apply

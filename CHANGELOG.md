@@ -31,6 +31,10 @@ This is the first release of the **vanillajs-datetimepicker** fork. The package 
 - `DateRangePicker` no longer counts `<input>` elements inside the picker popup when discovering its bound inputs (`closest('.datepicker')` filter).
 - `DaysView` initialization is guarded against the `DateRangePicker` `dates` getter not being defined yet (prevents a crash on first construction).
 
+### Bug fixes
+
+- `parseDate` now treats the ISO 8601 `T` as a date/time delimiter, so strings like `2026-06-18T23:35:38` parse correctly instead of folding the `T` into the day field (which rolled the hour past 24 and pushed the date forward a day). Only a `T` between two digits is treated as a separator, so textual day/month names that start with "T" (e.g. "Thursday") are left intact.
+
 ## 1.3.4
 
 ### Bug fix
