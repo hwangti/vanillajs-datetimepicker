@@ -153,6 +153,15 @@ export function computeTimeBounds(date, minDate, maxDate, step = 1) {
   return bounds;
 }
 
+// Time value of the first (atEnd = false) or last (atEnd = true) selectable
+// minute of the given date's day. Used as the default time of a range's side.
+export function edgeTimeOfDay(date, atEnd, minDate, maxDate, step = 1) {
+  const bounds = computeTimeBounds(date, minDate, maxDate, step);
+  return atEnd
+    ? new Date(date).setHours(bounds.hourMax, bounds.minuteMax, 0, 0)
+    : new Date(date).setHours(bounds.hourMin, bounds.minuteMin, 0, 0);
+}
+
 // Clamp an hour/minute pair into the bounds computed by computeTimeBounds()
 export function clampTimeToBounds(hour, minute, bounds) {
   if (hour <= bounds.hourMin) {

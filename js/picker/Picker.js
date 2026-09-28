@@ -1,5 +1,5 @@
 import {lastItemOf, isInRange, limitToRange} from '../lib/utils.js';
-import {today, stripTime, regularizeDate, computeTimeBounds} from '../lib/date.js';
+import {today, stripTime, regularizeDate, computeTimeBounds, edgeTimeOfDay} from '../lib/date.js';
 import {
   parseHTML,
   getParent,
@@ -531,10 +531,16 @@ export default class Picker {
     if (!config.pickTime || !controls.hourInput) {
       return;
     }
-    const source = new Date(dates.length > 0 ? dates[dates.length - 1] : this.viewDate);
+    const step = config.minuteStep || 1;
+    // with nothing selected yet, the range-end side defaults to the last
+    // selectable minute of the day so that picking a day covers all of it
+    const source = new Date(dates.length > 0
+      ? dates[dates.length - 1]
+      : datepicker.rangeSideIndex === 1
+        ? edgeTimeOfDay(this.viewDate, true, config.minDate, config.maxDate, step)
+        : this.viewDate);
     const h = source.getHours();
     const m = source.getMinutes();
-    const step = config.minuteStep || 1;
     // narrow the controls' min/max to the selectable range of the source's day
     // so the browser stops wheel/spinner/slider edits right at minDate/maxDate.
     // bounds must be set before values — assigning a range input a value

@@ -1,5 +1,6 @@
 import {registerListeners, unregisterListeners} from './lib/event.js';
 import {formatDate} from './lib/date-format.js';
+import {edgeTimeOfDay} from './lib/date.js';
 import Datepicker from './Datepicker.js';
 
 // filter out the config options inapproprite to pass to Datepicker
@@ -74,7 +75,15 @@ function onChangeDate(rangepicker, ev) {
     // selection (no matter if it's empty) to the other side
     if (changedDate !== undefined || otherDate !== undefined) {
       setDateOptions.clear = true;
-      datepickers[otherSide].setDate(datepickers[changedSide].dates, setDateOptions);
+      const {config} = datepickers[otherSide];
+      // with pickTime, copy the day only — the start gets the day's first
+      // selectable minute and the end its last, so the range spans the day
+      const copied = config.pickTime
+        ? datepickers[changedSide].dates.map(date => edgeTimeOfDay(
+          date, otherSide === 1, config.minDate, config.maxDate, config.minuteStep || 1
+        ))
+        : datepickers[changedSide].dates;
+      datepickers[otherSide].setDate(copied, setDateOptions);
     }
   }
   datepickers.forEach((datepicker) => {

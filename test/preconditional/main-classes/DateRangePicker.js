@@ -204,6 +204,30 @@ describe('DateRangePicker', function () {
       expect(new Date(drp.dates[1]).getMinutes(), 'to be', 45);
     });
 
+    it('fills the other side with the whole day when only one side is picked', function () {
+      const drp = new DateRangePicker(elem, {pickTime: true, minuteStep: 15});
+
+      drp.datepickers[0].setDate(new Date(2024, 2, 15, 9, 30));
+      expect(drp.dates[1], 'to be', new Date(2024, 2, 15, 23, 45).getTime());
+
+      drp.datepickers[1].setDate({clear: true});
+      drp.datepickers[1].setDate(new Date(2024, 2, 20, 18, 0));
+      expect(drp.dates[0], 'to be', new Date(2024, 2, 20, 0, 0).getTime());
+    });
+
+    it('defaults the empty end side\'s time inputs to the last minute, capped by maxDate', function () {
+      const drp = new DateRangePicker(elem, {pickTime: true, allowOneSidedRange: true});
+      const {controls} = drp.datepickers[1].picker;
+      expect(controls.hourInput.value, 'to be', '23');
+      expect(controls.minuteInput.value, 'to be', '59');
+
+      drp.setOptions({maxDate: new Date(), defaultViewDate: new Date()});
+      drp.datepickers[1].picker.syncTimeInputs();
+      const now = new Date();
+      expect(Number(controls.hourInput.value), 'to be', now.getHours());
+      expect(Number(controls.minuteInput.value), 'to be', now.getMinutes());
+    });
+
     it('preserves time on the same calendar day for both ends', function () {
       const drp = new DateRangePicker(elem, {pickTime: true});
       const start = new Date(2024, 2, 15, 9, 0);
