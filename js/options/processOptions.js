@@ -71,6 +71,10 @@ function replaceOptions(options, from, to, convert = undefined) {
 // Create Datepicker configuration to set
 export default function processOptions(options, datepicker) {
   const inOpts = Object.assign({}, options);
+  // timeOnly is a time picker without the calendar — it implies pickTime
+  if (inOpts.timeOnly) {
+    inOpts.pickTime = true;
+  }
   const config = {};
   const locales = datepicker.constructor.locales;
   const rangeEnd = !!datepicker.rangeSideIndex;
@@ -359,6 +363,10 @@ export default function processOptions(options, datepicker) {
       config.minuteStep = step;
     }
     delete inOpts.minuteStep;
+  }
+  if ('timeOnly' in inOpts) {
+    config.timeOnly = !!inOpts.timeOnly;
+    delete inOpts.timeOnly;
   }
   if ('timeSliderScale' in inOpts) {
     config.timeSliderScale = !!inOpts.timeSliderScale;

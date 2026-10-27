@@ -124,6 +124,19 @@ $dp-one-seventh: math.percentage(math.div(1, 7));
   padding: 2px;
 }
 
+// timeOnly: a time picker without the calendar
+.datepicker-time-only {
+  .datepicker-header,
+  .datepicker-main {
+    display: none;
+  }
+
+  // keep the calendar's width so the sliders stay usable
+  .datepicker-footer {
+    width: $dp-view-width;
+  }
+}
+
 .datepicker-footer {
   box-shadow: $dp-footer-box-shadow;
   background-color: $dp-footer-background-color;

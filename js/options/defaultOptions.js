@@ -29,6 +29,7 @@ export default {
   showOnClick: true,
   showOnFocus: true,
   startView: 0,
+  timeOnly: false,
   timeSliderScale: true,
   title: '',
   todayButton: false,

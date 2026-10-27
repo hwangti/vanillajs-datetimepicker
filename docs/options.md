@@ -457,6 +457,27 @@ Whether to show the date picker automatically when the associated input filed re
 
 The view displayed when the date picker opens. `0`:_days_ – `3`:_decades_.
 
+#### timeOnly
+- Type: `Boolean`
+- Default: `false`
+
+Whether to use the picker as a time-only picker. When `true`, [`pickTime`](#pickTime) is turned on and the calendar (title bar and date grid) is hidden, leaving only the hour/minute controls and the footer buttons. Set a time-only [`format`](#format) such as `'HH:mm'`.
+
+```js
+new Datepicker(input, {
+  timeOnly: true,
+  format: 'HH:mm'
+});
+```
+
+Values are still `Date`s: a time string parsed with nothing selected lands on today, and a time string typed while a value is selected keeps that value's day (so re-parsing the input on blur never moves it). The today button always selects the current time ("Now") regardless of [`todayButtonMode`](#todayButtonMode), and the arrow keys and the prev/next/view-switch shortcuts don't move the hidden calendar.
+
+In a date range picker, the range may run overnight: instead of swapping a start later than the end, the end is placed on the start's day, or on the next day when its time is earlier than the start's — e.g. `22:00` ~ `01:00` gives `getDates()` of today 22:00 and tomorrow 01:00.
+
+> Setting `timeOnly: true` turns `pickTime` on, but `timeOnly: false` doesn't turn it off.
+>
+> [`minDate`](#minDate)/[`maxDate`](#maxDate) keep their date semantics — they're compared against the full `Date` values, so they don't express a daily time window, and a range's next-day end may fall outside them.
+
 #### timeSliderScale
 - Type: `Boolean`
 - Default: `true`

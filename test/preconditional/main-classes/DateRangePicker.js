@@ -190,6 +190,142 @@ describe('DateRangePicker', function () {
     });
   });
 
+  describe('timeOnly', function () {
+    let clock;
+
+    beforeEach(function () {
+      // fake "now": 2024-03-15 13:27
+      clock = sinon.useFakeTimers({
+        now: new Date(2024, 2, 15, 13, 27).getTime(),
+        toFake: ['Date'],
+      });
+    });
+
+    afterEach(function () {
+      clock.restore();
+    });
+
+    const at = (day, h, m) => new Date(2024, 2, day, h, m).getTime();
+    const opts = {timeOnly: true, format: 'HH:mm'};
+
+    it('keeps a same-day range as is', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates('09:00', '18:00');
+      expect(drp.dates, 'to equal', [at(15, 9, 0), at(15, 18, 0)]);
+    });
+
+    it('runs an overnight range into the next day instead of swapping', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates('22:00', '01:00');
+      expect(drp.dates, 'to equal', [at(15, 22, 0), at(16, 1, 0)]);
+      expect(drp.getDates('HH:mm'), 'to equal', ['22:00', '01:00']);
+      expect(input0.value, 'to be', '22:00');
+      expect(input1.value, 'to be', '01:00');
+    });
+
+    it('keeps the same start and end times on the same day', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates('10:00', '10:00');
+      expect(drp.dates, 'to equal', [at(15, 10, 0), at(15, 10, 0)]);
+    });
+
+    it('normalizes an overnight range given by the initial input values', function () {
+      input0.value = '23:30';
+      input1.value = '00:15';
+      const drp = new DateRangePicker(elem, opts);
+      expect(drp.dates, 'to equal', [at(15, 23, 30), at(16, 0, 15)]);
+    });
+
+    it('re-anchors the end when the start moves past it', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates('09:00', '18:00');
+
+      drp.datepickers[0].setDate(at(15, 20, 0));
+      expect(drp.dates, 'to equal', [at(15, 20, 0), at(16, 18, 0)]);
+    });
+
+    it('brings the end back to the start\'s day when the start moves before it', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates('22:00', '01:00');
+
+      drp.datepickers[0].setDate(at(15, 0, 30));
+      expect(drp.dates, 'to equal', [at(15, 0, 30), at(15, 1, 0)]);
+    });
+
+    it('re-anchors the end when a time string is typed into it', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates('22:00', '23:00');
+
+      input1.value = '02:00';
+      drp.datepickers[1].update();
+      expect(drp.dates, 'to equal', [at(15, 22, 0), at(16, 2, 0)]);
+
+      input1.value = '23:30';
+      drp.datepickers[1].update();
+      expect(drp.dates, 'to equal', [at(15, 22, 0), at(15, 23, 30)]);
+    });
+
+    it('re-anchors the end when changed with the time controls', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates('22:00', '23:00');
+
+      const {hourInput} = drp.datepickers[1].picker.controls;
+      hourInput.value = '3';
+      hourInput.dispatchEvent(new Event('input'));
+      expect(drp.dates, 'to equal', [at(15, 22, 0), at(16, 3, 0)]);
+    });
+
+    it('keeps a next-day end stable when its input is re-parsed unchanged', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates('22:00', '01:00');
+      const spy = sinon.spy();
+      input1.addEventListener('changeDate', spy);
+
+      drp.datepickers[1].update();
+      expect(drp.dates, 'to equal', [at(15, 22, 0), at(16, 1, 0)]);
+      expect(spy.called, 'to be false');
+      input1.removeEventListener('changeDate', spy);
+    });
+
+    it('keeps the start\'s day when a time string is typed into it', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates(at(10, 22, 0), at(11, 1, 0));
+
+      // the start keeps its day (10th); the end follows it
+      input0.value = '01:30';
+      drp.datepickers[0].update();
+      expect(drp.dates, 'to equal', [at(10, 1, 30), at(11, 1, 0)]);
+    });
+
+    it('fills the end with the start day\'s last minute when only the start is picked', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.datepickers[0].setDate('22:00');
+      expect(drp.dates, 'to equal', [at(15, 22, 0), at(15, 23, 59)]);
+    });
+
+    it('clears both sides together when allowOneSidedRange is false', function () {
+      const drp = new DateRangePicker(elem, opts);
+      drp.setDates('22:00', '01:00');
+      drp.datepickers[1].setDate({clear: true});
+      expect(drp.dates, 'to equal', [undefined, undefined]);
+    });
+
+    it('allows a one-sided range when allowOneSidedRange is true', function () {
+      const drp = new DateRangePicker(elem, Object.assign({allowOneSidedRange: true}, opts));
+      drp.datepickers[1].setDate('01:00');
+      expect(drp.dates, 'to equal', [undefined, at(15, 1, 0)]);
+
+      drp.datepickers[0].setDate('22:00');
+      expect(drp.dates, 'to equal', [at(15, 22, 0), at(16, 1, 0)]);
+    });
+
+    it('still swaps a reversed range without timeOnly', function () {
+      const drp = new DateRangePicker(elem, {pickTime: true});
+      drp.setDates(at(15, 22, 0), at(15, 1, 0));
+      expect(drp.dates, 'to equal', [at(15, 1, 0), at(15, 22, 0)]);
+    });
+  });
+
   describe('setDates() with pickTime', function () {
     it('keeps the start and end times independent', function () {
       const drp = new DateRangePicker(elem, {pickTime: true});

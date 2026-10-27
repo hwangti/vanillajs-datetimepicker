@@ -58,6 +58,22 @@
       <div class="out" id="outRange"></div>
     </div>
 
+    <div class="row">
+      <label for="dt4">timeOnly: true, minuteStep: 5</label>
+      <input id="dt4" class="dp" type="text" placeholder="HH:mm">
+      <div class="out" id="out4"></div>
+    </div>
+
+    <div class="row">
+      <label>DateRangePicker + timeOnly (overnight ranges allowed, e.g. 22:00 — 01:00)</label>
+      <div id="timeRangeWrap" style="display:flex; gap:0.5rem; align-items:center;">
+        <input id="timeRangeStart" class="dp" type="text" placeholder="start">
+        <span>~</span>
+        <input id="timeRangeEnd" class="dp" type="text" placeholder="end">
+      </div>
+      <div class="out" id="outTimeRange"></div>
+    </div>
+
     <h2>Configuration</h2>
     <pre><code>new Datepicker(input, {
   format: 'yyyy-MM-dd HH:mm',
@@ -102,6 +118,31 @@
         minuteStep: 15,
         timeSliderScale: false,
       }, common), 'out3');
+
+      bind('dt4', Object.assign({
+        format: 'HH:mm',
+        timeOnly: true,
+        minuteStep: 5,
+      }, common), 'out4');
+
+      function bindRange(wrapId, opts, outId) {
+        const wrap = document.getElementById(wrapId);
+        const range = new DateRangePicker(wrap, opts);
+        const out = document.getElementById(outId);
+        const update = () => {
+          const [s, e] = range.dates;
+          out.textContent = (s || e)
+            ? `[${s ? new Date(s).toISOString() : '∅'}] ~ [${e ? new Date(e).toISOString() : '∅'}]`
+            : '';
+        };
+        wrap.addEventListener('changeDate', update);
+        update();
+      }
+      bindRange('timeRangeWrap', Object.assign({
+        format: 'HH:mm',
+        timeOnly: true,
+        minuteStep: 5,
+      }, common), 'outTimeRange');
 
       const rangeWrap = document.getElementById('rangeWrap');
       const drp = new DateRangePicker(rangeWrap, Object.assign({

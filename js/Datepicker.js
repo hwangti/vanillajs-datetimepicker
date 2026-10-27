@@ -41,6 +41,12 @@ function processInputDates(datepicker, inputDates, clear = false) {
     if (date === undefined) {
       return dates;
     }
+    if (config.timeOnly && typeof dt === 'string' && origDates.length > 0) {
+      // a time-only string carries no day — keep the current value's day so
+      // that re-parsing the input (e.g. on blur) doesn't move it to today
+      const d = new Date(date);
+      date = new Date(origDates[0]).setHours(d.getHours(), d.getMinutes(), 0, 0);
+    }
     if (!config.pickTime) {
       date = stripTime(date);
     } else if (config.minuteStep > 1) {

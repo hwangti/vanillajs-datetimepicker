@@ -1,6 +1,6 @@
 import {registerListeners, unregisterListeners} from './lib/event.js';
 import {formatDate} from './lib/date-format.js';
-import {edgeTimeOfDay} from './lib/date.js';
+import {addDays, edgeTimeOfDay} from './lib/date.js';
 import Datepicker from './Datepicker.js';
 
 // filter out the config options inapproprite to pass to Datepicker
@@ -41,6 +41,13 @@ function callSetDate(dp, value, options) {
   }
 }
 
+// the end's time on the start's day, moved to the next day if before the start
+function anchorEndToStart(end, start) {
+  const endTime = new Date(end);
+  const endDate = new Date(start).setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
+  return endDate < start ? addDays(endDate, 1) : endDate;
+}
+
 function onChangeDate(rangepicker, ev) {
   // to prevent both datepickers trigger the other side's update each other
   if (rangepicker._updating) {
@@ -62,8 +69,15 @@ function onChangeDate(rangepicker, ev) {
   const otherDate = datepickers[otherSide].dates[0];
 
   if (changedDate !== undefined && otherDate !== undefined) {
-    // if the start of the range > the end, swap them
-    if (changedSide === 0 && changedDate > otherDate) {
+    if (datepicker0.config.timeOnly) {
+      // time-only ranges may run overnight (e.g. 22:00 - 01:00): instead of
+      // swapping, put the end on the start's day, or the next one if earlier
+      const endDate = anchorEndToStart(datepicker1.dates[0], datepicker0.dates[0]);
+      if (endDate !== datepicker1.dates[0]) {
+        datepicker1.setDate(endDate, setDateOptions);
+      }
+    } else if (changedSide === 0 && changedDate > otherDate) {
+      // if the start of the range > the end, swap them
       datepicker0.setDate(otherDate, setDateOptions);
       datepicker1.setDate(changedDate, setDateOptions);
     } else if (changedSide === 1 && changedDate < otherDate) {

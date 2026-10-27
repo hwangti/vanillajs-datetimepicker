@@ -56,7 +56,8 @@ export function clearSelection(datepicker) {
 export function goToOrSelectToday(datepicker) {
   const config = datepicker.config;
   let currentDate = today();
-  if (config.todayButtonMode === 1) {
+  // focusing today's cell means nothing without a calendar — timeOnly selects
+  if (config.todayButtonMode === 1 || config.timeOnly) {
     if (config.pickTime) {
       // when picking time as well, "today" means "now" — snap the current
       // time to the minute step and clamp it into min/maxDate's bounds

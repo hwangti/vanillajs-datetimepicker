@@ -1071,4 +1071,139 @@ describe('Datepicker', function () {
       expect(dp.picker.controls.todayButton.textContent, 'to be', 'Now');
     });
   });
+
+  describe('timeOnly', function () {
+    let clock;
+    let input;
+
+    beforeEach(function () {
+      // fake "now": 2024-03-15 13:27
+      clock = sinon.useFakeTimers({
+        now: new Date(2024, 2, 15, 13, 27).getTime(),
+        toFake: ['Date'],
+      });
+      input = document.createElement('input');
+      testContainer.appendChild(input);
+    });
+
+    afterEach(function () {
+      if (input.datepicker) {
+        input.datepicker.destroy();
+      }
+      testContainer.removeChild(input);
+      clock.restore();
+    });
+
+    it('implies pickTime and marks the picker to hide the calendar', function () {
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm'});
+      expect(dp.config.timeOnly, 'to be true');
+      expect(dp.config.pickTime, 'to be true');
+      expect(dp.picker.element.classList.contains('datepicker-time-only'), 'to be true');
+      expect(dp.picker.controls.timeContainer.style.display, 'to be', '');
+
+      dp.setOptions({timeOnly: false});
+      expect(dp.config.timeOnly, 'to be false');
+      expect(dp.picker.element.classList.contains('datepicker-time-only'), 'to be false');
+    });
+
+    it('is off by default', function () {
+      const dp = new Datepicker(input);
+      expect(dp.config.timeOnly, 'to be false');
+      expect(dp.picker.element.classList.contains('datepicker-time-only'), 'to be false');
+    });
+
+    it('parses a time string onto today when nothing is selected', function () {
+      input.value = '22:30';
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm'});
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 22, 30).getTime()]);
+      expect(dp.getDate('HH:mm'), 'to be', '22:30');
+    });
+
+    it('keeps the current value\'s day when a time string is entered', function () {
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm'});
+      dp.setDate(new Date(2024, 2, 10, 9, 0));
+
+      input.value = '22:30';
+      dp.update();
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 10, 22, 30).getTime()]);
+    });
+
+    it('doesn\'t move the value to today when the input is re-parsed unchanged', function () {
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm'});
+      dp.setDate(new Date(2024, 2, 10, 9, 0));
+      const spy = sinon.spy();
+      input.addEventListener('changeDate', spy);
+
+      dp.update();
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 10, 9, 0).getTime()]);
+      expect(spy.called, 'to be false');
+      input.removeEventListener('changeDate', spy);
+    });
+
+    it('keeps the day of a Date object passed to setDate()', function () {
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm'});
+      dp.setDate(new Date(2024, 2, 10, 9, 0));
+      dp.setDate(new Date(2024, 2, 20, 7, 15));
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 20, 7, 15).getTime()]);
+    });
+
+    it('updates the time with the time controls', function () {
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm'});
+      dp.setDate(new Date(2024, 2, 10, 9, 0));
+      const {hourInput} = dp.picker.controls;
+      hourInput.value = '23';
+      hourInput.dispatchEvent(new Event('input'));
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 10, 23, 0).getTime()]);
+      expect(input.value, 'to be', '23:00');
+    });
+
+    it('selects "now" with the today button regardless of todayButtonMode', function () {
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm', todayButton: true});
+      expect(dp.config.todayButtonMode, 'to be', 0);
+      expect(dp.picker.controls.todayButton.textContent, 'to be', 'Now');
+
+      dp.picker.controls.todayButton.click();
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 15, 13, 27).getTime()]);
+    });
+
+    it('doesn\'t move the hidden calendar with the arrow keys', function () {
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm'});
+      dp.setDate(new Date(2024, 2, 10, 9, 0));
+      dp.show();
+      const viewDate = dp.picker.viewDate;
+
+      simulant.fire(input, 'keydown', {key: 'ArrowLeft'});
+      expect(dp.picker.viewDate, 'to be', viewDate);
+      expect(dp.editMode, 'to be true');
+      dp.exitEditMode();
+
+      simulant.fire(input, 'keydown', {key: 'ArrowDown'});
+      expect(dp.picker.viewDate, 'to be', viewDate);
+      dp.exitEditMode();
+    });
+
+    it('ignores the prev/next/view-switch shortcuts', function () {
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm'});
+      dp.setDate(new Date(2024, 2, 10, 9, 0));
+      dp.show();
+      const viewDate = dp.picker.viewDate;
+
+      simulant.fire(input, 'keydown', {key: 'ArrowLeft', ctrlKey: true});
+      simulant.fire(input, 'keydown', {key: 'ArrowRight', ctrlKey: true});
+      simulant.fire(input, 'keydown', {key: 'ArrowUp', ctrlKey: true});
+      expect(dp.picker.viewDate, 'to be', viewDate);
+      expect(dp.picker.currentView.id, 'to be', 0);
+    });
+
+    it('keeps the selected day when Enter is pressed', function () {
+      const dp = new Datepicker(input, {timeOnly: true, format: 'HH:mm'});
+      dp.setDate(new Date(2024, 2, 10, 9, 0));
+      dp.show();
+      simulant.fire(input, 'keydown', {key: 'ArrowLeft'});
+      dp.exitEditMode();
+
+      simulant.fire(input, 'keydown', {key: 'Enter'});
+      expect(dp.dates, 'to equal', [new Date(2024, 2, 10, 9, 0).getTime()]);
+    });
+  });
 });

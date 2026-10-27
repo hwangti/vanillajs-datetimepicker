@@ -96,10 +96,14 @@ function processPickerOptions(picker, options) {
   }
   if (options.locale || 'pickTime' in options || 'todayButtonMode' in options) {
     // when picking time, the today button in select mode picks "now" —
-    // label it accordingly
-    const {locale, pickTime, todayButtonMode} = picker.datepicker.config;
+    // label it accordingly (timeOnly always selects)
+    const {locale, pickTime, todayButtonMode, timeOnly} = picker.datepicker.config;
     picker.controls.todayButton.textContent =
-      pickTime && todayButtonMode === 1 ? locale.now : locale.today;
+      timeOnly || (pickTime && todayButtonMode === 1) ? locale.now : locale.today;
+  }
+  if ('timeOnly' in options) {
+    // the stylesheet hides the calendar (header and main) with this class
+    picker.element.classList.toggle('datepicker-time-only', !!options.timeOnly);
   }
   if ('todayButton' in options) {
     if (options.todayButton) {

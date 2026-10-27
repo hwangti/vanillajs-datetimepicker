@@ -156,6 +156,15 @@ var dateUtils = (function (exports) {
     return bounds;
   }
 
+  // Time value of the first (atEnd = false) or last (atEnd = true) selectable
+  // minute of the given date's day. Used as the default time of a range's side.
+  function edgeTimeOfDay(date, atEnd, minDate, maxDate, step = 1) {
+    const bounds = computeTimeBounds(date, minDate, maxDate, step);
+    return atEnd
+      ? new Date(date).setHours(bounds.hourMax, bounds.minuteMax, 0, 0)
+      : new Date(date).setHours(bounds.hourMin, bounds.minuteMin, 0, 0);
+  }
+
   // Clamp an hour/minute pair into the bounds computed by computeTimeBounds()
   function clampTimeToBounds(hour, minute, bounds) {
     if (hour <= bounds.hourMin) {
@@ -199,6 +208,7 @@ var dateUtils = (function (exports) {
   exports.computeTimeBounds = computeTimeBounds;
   exports.dateValue = dateValue;
   exports.dayOfTheWeekOf = dayOfTheWeekOf;
+  exports.edgeTimeOfDay = edgeTimeOfDay;
   exports.getIsoWeek = getIsoWeek;
   exports.getMidEasternWeek = getMidEasternWeek;
   exports.getWesternTradWeek = getWesternTradWeek;

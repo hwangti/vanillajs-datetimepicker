@@ -113,7 +113,11 @@ export function onKeydown(datepicker, ev) {
         action = shortcut;
       }
     } else if (active) {
-      if (shortcut === 'hide') {
+      // timeOnly hides the calendar — don't let prev/next/viewSwitch move it
+      const calendarShortcut = ['prevButton', 'nextButton', 'viewSwitch'].includes(shortcut);
+      if (config.timeOnly && calendarShortcut) {
+        // no action
+      } else if (shortcut === 'hide') {
         action = shortcut;
       } else if (shortcut === 'prevButton') {
         action = [goToPrevOrNext, [datepicker, -1]];
@@ -146,7 +150,8 @@ export function onKeydown(datepicker, ev) {
   }
 
   const handleArrowKeyPress = (direction, vertical) => {
-    if (shiftKey || ctrlOrMetaKey || altKey) {
+    // timeOnly has no visible calendar to move the focus on — edit the text
+    if (shiftKey || ctrlOrMetaKey || altKey || config.timeOnly) {
       datepicker.enterEditMode();
     } else {
       moveByArrowKey(datepicker, direction, vertical);
