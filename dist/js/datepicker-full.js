@@ -214,6 +214,15 @@
     return bounds;
   }
 
+  // Time value of the first (atEnd = false) or last (atEnd = true) selectable
+  // minute of the given date's day. Used as the default time of a range's side.
+  function edgeTimeOfDay(date, atEnd, minDate, maxDate, step = 1) {
+    const bounds = computeTimeBounds(date, minDate, maxDate, step);
+    return atEnd
+      ? new Date(date).setHours(bounds.hourMax, bounds.minuteMax, 0, 0)
+      : new Date(date).setHours(bounds.hourMin, bounds.minuteMin, 0, 0);
+  }
+
   // Clamp an hour/minute pair into the bounds computed by computeTimeBounds()
   function clampTimeToBounds(hour, minute, bounds) {
     if (hour <= bounds.hourMin) {
@@ -637,6 +646,7 @@
     showOnClick: true,
     showOnFocus: true,
     startView: 0,
+    timeOnly: false,
     timeSliderScale: true,
     title: '',
     todayButton: false,
@@ -707,6 +717,10 @@
   // Create Datepicker configuration to set
   function processOptions(options, datepicker) {
     const inOpts = Object.assign({}, options);
+    // timeOnly is a time picker without the calendar — it implies pickTime
+    if (inOpts.timeOnly) {
+      inOpts.pickTime = true;
+    }
     const config = {};
     const locales = datepicker.constructor.locales;
     const rangeEnd = !!datepicker.rangeSideIndex;
@@ -995,6 +1009,10 @@
         config.minuteStep = step;
       }
       delete inOpts.minuteStep;
+    }
+    if ('timeOnly' in inOpts) {
+      config.timeOnly = !!inOpts.timeOnly;
+      delete inOpts.timeOnly;
     }
     if ('timeSliderScale' in inOpts) {
       config.timeSliderScale = !!inOpts.timeSliderScale;
@@ -1757,7 +1775,8 @@
   function goToOrSelectToday(datepicker) {
     const config = datepicker.config;
     let currentDate = today();
-    if (config.todayButtonMode === 1) {
+    // focusing today's cell means nothing without a calendar — timeOnly selects
+    if (config.todayButtonMode === 1 || config.timeOnly) {
       if (config.pickTime) {
         // when picking time as well, "today" means "now" — snap the current
         // time to the minute step and clamp it into min/maxDate's bounds
@@ -1977,10 +1996,14 @@
     }
     if (options.locale || 'pickTime' in options || 'todayButtonMode' in options) {
       // when picking time, the today button in select mode picks "now" —
-      // label it accordingly
-      const {locale, pickTime, todayButtonMode} = picker.datepicker.config;
+      // label it accordingly (timeOnly always selects)
+      const {locale, pickTime, todayButtonMode, timeOnly} = picker.datepicker.config;
       picker.controls.todayButton.textContent =
-        pickTime && todayButtonMode === 1 ? locale.now : locale.today;
+        timeOnly || (pickTime && todayButtonMode === 1) ? locale.now : locale.today;
+    }
+    if ('timeOnly' in options) {
+      // the stylesheet hides the calendar (header and main) with this class
+      picker.element.classList.toggle('datepicker-time-only', !!options.timeOnly);
     }
     if ('todayButton' in options) {
       if (options.todayButton) {
@@ -2412,10 +2435,16 @@
       if (!config.pickTime || !controls.hourInput) {
         return;
       }
-      const source = new Date(dates.length > 0 ? dates[dates.length - 1] : this.viewDate);
+      const step = config.minuteStep || 1;
+      // with nothing selected yet, the range-end side defaults to the last
+      // selectable minute of the day so that picking a day covers all of it
+      const source = new Date(dates.length > 0
+        ? dates[dates.length - 1]
+        : datepicker.rangeSideIndex === 1
+          ? edgeTimeOfDay(this.viewDate, true, config.minDate, config.maxDate, step)
+          : this.viewDate);
       const h = source.getHours();
       const m = source.getMinutes();
-      const step = config.minuteStep || 1;
       // narrow the controls' min/max to the selectable range of the source's day
       // so the browser stops wheel/spinner/slider edits right at minDate/maxDate.
       // bounds must be set before values — assigning a range input a value
@@ -2580,7 +2609,9 @@
           action = shortcut;
         }
       } else if (active) {
-        if (shortcut === 'hide') {
+        // timeOnly hides the calendar — don't let prev/next/viewSwitch move it
+        const calendarShortcut = ['prevButton', 'nextButton', 'viewSwitch'].includes(shortcut);
+        if (config.timeOnly && calendarShortcut) ; else if (shortcut === 'hide') {
           action = shortcut;
         } else if (shortcut === 'prevButton') {
           action = [goToPrevOrNext, [datepicker, -1]];
@@ -2613,7 +2644,8 @@
     }
 
     const handleArrowKeyPress = (direction, vertical) => {
-      if (shiftKey || ctrlOrMetaKey || altKey) {
+      // timeOnly has no visible calendar to move the focus on — edit the text
+      if (shiftKey || ctrlOrMetaKey || altKey || config.timeOnly) {
         datepicker.enterEditMode();
       } else {
         moveByArrowKey(datepicker, direction, vertical);
@@ -2724,6 +2756,12 @@
       let date = parseDate(dt, config.format, config.locale);
       if (date === undefined) {
         return dates;
+      }
+      if (config.timeOnly && typeof dt === 'string' && origDates.length > 0) {
+        // a time-only string carries no day — keep the current value's day so
+        // that re-parsing the input (e.g. on blur) doesn't move it to today
+        const d = new Date(date);
+        date = new Date(origDates[0]).setHours(d.getHours(), d.getMinutes(), 0, 0);
       }
       if (!config.pickTime) {
         date = stripTime(date);
@@ -3321,6 +3359,13 @@
     }
   }
 
+  // the end's time on the start's day, moved to the next day if before the start
+  function anchorEndToStart(end, start) {
+    const endTime = new Date(end);
+    const endDate = new Date(start).setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
+    return endDate < start ? addDays(endDate, 1) : endDate;
+  }
+
   function onChangeDate(rangepicker, ev) {
     // to prevent both datepickers trigger the other side's update each other
     if (rangepicker._updating) {
@@ -3342,8 +3387,15 @@
     const otherDate = datepickers[otherSide].dates[0];
 
     if (changedDate !== undefined && otherDate !== undefined) {
-      // if the start of the range > the end, swap them
-      if (changedSide === 0 && changedDate > otherDate) {
+      if (datepicker0.config.timeOnly) {
+        // time-only ranges may run overnight (e.g. 22:00 - 01:00): instead of
+        // swapping, put the end on the start's day, or the next one if earlier
+        const endDate = anchorEndToStart(datepicker1.dates[0], datepicker0.dates[0]);
+        if (endDate !== datepicker1.dates[0]) {
+          datepicker1.setDate(endDate, setDateOptions);
+        }
+      } else if (changedSide === 0 && changedDate > otherDate) {
+        // if the start of the range > the end, swap them
         datepicker0.setDate(otherDate, setDateOptions);
         datepicker1.setDate(changedDate, setDateOptions);
       } else if (changedSide === 1 && changedDate < otherDate) {
@@ -3355,7 +3407,15 @@
       // selection (no matter if it's empty) to the other side
       if (changedDate !== undefined || otherDate !== undefined) {
         setDateOptions.clear = true;
-        datepickers[otherSide].setDate(datepickers[changedSide].dates, setDateOptions);
+        const {config} = datepickers[otherSide];
+        // with pickTime, copy the day only — the start gets the day's first
+        // selectable minute and the end its last, so the range spans the day
+        const copied = config.pickTime
+          ? datepickers[changedSide].dates.map(date => edgeTimeOfDay(
+            date, otherSide === 1, config.minDate, config.maxDate, config.minuteStep || 1
+          ))
+          : datepickers[changedSide].dates;
+        datepickers[otherSide].setDate(copied, setDateOptions);
       }
     }
     datepickers.forEach((datepicker) => {

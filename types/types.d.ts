@@ -64,6 +64,7 @@ export type DatepickerOptions = {
     showOnClick?: boolean;
     showOnFocus?: boolean;
     startView?: number;
+    timeOnly?: boolean;
     timeSliderScale?: boolean;
     title?: string;
     todayButtonMode?: number;

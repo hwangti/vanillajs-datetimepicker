@@ -16,5 +16,6 @@ export function computeTimeBounds(date: any, minDate: any, maxDate: any, step?: 
     hourMax: number;
     minuteMax: number;
 };
+export function edgeTimeOfDay(date: any, atEnd: any, minDate: any, maxDate: any, step?: number): number;
 export function clampTimeToBounds(hour: any, minute: any, bounds: any): any[];
 export function regularizeDate(date: any, timeSpan: any, useLastDate: any, keepTime?: boolean): any;

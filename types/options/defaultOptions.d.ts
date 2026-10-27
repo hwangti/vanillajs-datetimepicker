@@ -28,6 +28,7 @@ declare namespace _default {
     let showOnClick: boolean;
     let showOnFocus: boolean;
     let startView: number;
+    let timeOnly: boolean;
     let timeSliderScale: boolean;
     let title: string;
     let todayButton: boolean;

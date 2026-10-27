@@ -26,6 +26,7 @@ export default function processOptions(options: any, datepicker: any): {
     };
     pickTime: boolean;
     minuteStep: number;
+    timeOnly: boolean;
     timeSliderScale: boolean;
     todayButtonMode: any;
 };
